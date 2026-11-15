@@ -1,0 +1,12 @@
+# Initialization environment verified on Windows with Python 3.14.7.
+# Direct dependencies.
+numpy==2.5.4
+opencv-python==5.0.0.93
+pytest==9.2.0
+
+# Pinned pytest dependencies for reproducible initialization verification.
+colorama==0.4.6
+iniconfig==2.3.1
+packaging==26.3
+pluggy==1.7.0
+pygments==2.21.0

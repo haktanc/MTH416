@@ -1,0 +1,8 @@
+{
+    "scope":  "Both raw collections; augmented images are fingerprinted only for preservation, not used in splitting or similarity analysis.",
+    "raw_files":  8648,
+    "before_sha256":  "1CF5F165A32F2C5C661A70B99DA4021A20187EBE204327BA1C74BC20A5D70D07",
+    "after_sha256":  "1CF5F165A32F2C5C661A70B99DA4021A20187EBE204327BA1C74BC20A5D70D07",
+    "unchanged":  true,
+    "method":  "SHA-256 over sorted repository-relative Windows paths, a space, uppercase file SHA-256, and CRLF per record."
+}

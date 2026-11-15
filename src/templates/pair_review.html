@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Near-duplicate candidate review</title>
+<style>
+  body { font: 16px system-ui; margin: 2rem auto; max-width: 1100px; padding: 1rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+  section { border-top: 1px solid #aaa; padding: 1rem 0; }
+  .pair { display: flex; flex-wrap: wrap; gap: 1rem; }
+  figure { margin: 0; width: 320px; max-width: 100%; }
+  img { width: 100%; aspect-ratio: 1; object-fit: contain; }
+  figcaption { overflow-wrap: anywhere; }
+  input[type=number] { width: 4rem; }
+  button, select, input { font: inherit; }
+</style>
+<h1>Near-duplicate candidate review</h1>
+<p><strong>Provisional: similarity is not proof of a shared physical part.</strong>
+All candidates remain unresolved unless an explicitly evidenced group is shown.
+No image is automatically discarded or grouped. The images are loaded directly
+from the raw collection; alignment affects display only.</p>
+<div class="controls">
+  <label>Show <select id="scope">
+    <option value="all">All candidates</option>
+    <option value="holdout">Across holdout boundary</option>
+    <option value="cv">Across training CV folds</option>
+    <option value="class">Different class labels</option>
+  </select></label>
+  <label>Maximum pHash distance <input id="distance" type="number" min="0" max="63" value="63"></label>
+  <label><input id="align" type="checkbox" checked> Align image B</label>
+  <button id="previous" type="button">Previous 25</button>
+  <button id="next" type="button">Next 25</button>
+</div>
+<p id="status" aria-live="polite"></p>
+<main id="pairs"></main>
+<script id="pair-data" type="application/json">__PAIR_DATA__</script>
+<script>
+  const pairs = JSON.parse(document.getElementById('pair-data').textContent);
+  const scope = document.getElementById('scope');
+  const distance = document.getElementById('distance');
+  const align = document.getElementById('align');
+  const container = document.getElementById('pairs');
+  let page = 0;
+  function element(tag, text) {
+    const node = document.createElement(tag);
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+  function render() {
+    const filtered = pairs.filter(p => p.phash_distance <= Number(distance.value) && (
+      scope.value === 'all' || (scope.value === 'holdout' && p.crosses_holdout) ||
+      (scope.value === 'cv' && p.crosses_cv) ||
+      (scope.value === 'class' && p.class_a !== p.class_b)
+    ));
+    page = Math.max(0, Math.min(page, Math.ceil(filtered.length / 25) - 1));
+    container.replaceChildren();
+    for (const p of filtered.slice(page * 25, (page + 1) * 25)) {
+      const card = element('section');
+      card.append(element('h2', `Pair ${p.pair_number}: ${p.review_status}`));
+      card.append(element('p', `pHash: ${p.phash_distance}/63; transform B: ${p.transform_b}; ` +
+        `normalized RMSE: ${p.rmse_64}; correlation: ${p.correlation_64}.`));
+      if (p.split_a !== undefined) {
+        card.append(element('p', `Subsets: ${p.split_a} / ${p.split_b}; ` +
+          `validation folds: ${p.validation_fold_a || 'test'} / ` +
+          `${p.validation_fold_b || 'test'}; same verified group: ${p.same_verified_group}.`));
+      }
+      const row = element('div'); row.className = 'pair';
+      for (const suffix of ['a', 'b']) {
+        const figure = element('figure');
+        const link = element('a'); link.href = p['source_' + suffix];
+        const img = element('img'); img.loading = 'lazy';
+        img.src = p['source_' + suffix]; img.alt = p['image_path_' + suffix];
+        if (suffix === 'b' && align.checked) img.style.transform = p.display_transform;
+        link.append(img); figure.append(link);
+        figure.append(element('figcaption', p['image_path_' + suffix]));
+        row.append(figure);
+      }
+      card.append(row); container.append(card);
+    }
+    document.getElementById('status').textContent = `${filtered.length} matching pairs of ` +
+      `${pairs.length}; page ${filtered.length ? page + 1 : 0} of ${Math.ceil(filtered.length / 25)}. ` +
+      `Boundary filters require the partition-review report.`;
+    document.getElementById('previous').disabled = page === 0;
+    document.getElementById('next').disabled = (page + 1) * 25 >= filtered.length;
+  }
+  for (const node of [scope, distance]) node.addEventListener('change', () => { page = 0; render(); });
+  align.addEventListener('change', render);
+  document.getElementById('previous').addEventListener('click', () => { page--; render(); });
+  document.getElementById('next').addEventListener('click', () => { page++; render(); });
+  render();
+</script>
+</html>

@@ -1,0 +1,41 @@
+# Raw datasets; split manifests remain eligible for tracking
+/data/raw/
+
+# Virtual environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Python build artifacts
+build/
+dist/
+*.egg-info/
+
+# Test coverage
+.coverage
+htmlcov/
+
+# Local secrets and temporary files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.tmp
+*.temp
+*.log
+~$*
+.DS_Store
+Thumbs.db
+
+# Generated binary models and caches
+/results/models/*
+!/results/models/.gitkeep
+/results/cache/

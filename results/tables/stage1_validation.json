@@ -1,0 +1,206 @@
+{
+  "all_primary_raw_files_unchanged": true,
+  "checks": {
+    "complete_primary_coverage": true,
+    "cv_regeneration_identical": true,
+    "disjoint_image_identities": true,
+    "no_exact_content_crosses_cv": true,
+    "no_exact_content_crosses_holdout": true,
+    "split_regeneration_identical": true,
+    "training_only_cv": true,
+    "valid_manifest_paths": true,
+    "verified_groups_isolated": true
+  },
+  "cv": {
+    "folds": [
+      {
+        "fit": {
+          "class_counts": {
+            "def_front": 500,
+            "ok_front": 332
+          },
+          "class_proportions": {
+            "def_front": 0.6009615384615384,
+            "ok_front": 0.39903846153846156
+          },
+          "total": 832
+        },
+        "fold": 1,
+        "validation": {
+          "class_counts": {
+            "def_front": 125,
+            "ok_front": 83
+          },
+          "class_proportions": {
+            "def_front": 0.6009615384615384,
+            "ok_front": 0.39903846153846156
+          },
+          "total": 208
+        }
+      },
+      {
+        "fit": {
+          "class_counts": {
+            "def_front": 500,
+            "ok_front": 332
+          },
+          "class_proportions": {
+            "def_front": 0.6009615384615384,
+            "ok_front": 0.39903846153846156
+          },
+          "total": 832
+        },
+        "fold": 2,
+        "validation": {
+          "class_counts": {
+            "def_front": 125,
+            "ok_front": 83
+          },
+          "class_proportions": {
+            "def_front": 0.6009615384615384,
+            "ok_front": 0.39903846153846156
+          },
+          "total": 208
+        }
+      },
+      {
+        "fit": {
+          "class_counts": {
+            "def_front": 500,
+            "ok_front": 332
+          },
+          "class_proportions": {
+            "def_front": 0.6009615384615384,
+            "ok_front": 0.39903846153846156
+          },
+          "total": 832
+        },
+        "fold": 3,
+        "validation": {
+          "class_counts": {
+            "def_front": 125,
+            "ok_front": 83
+          },
+          "class_proportions": {
+            "def_front": 0.6009615384615384,
+            "ok_front": 0.39903846153846156
+          },
+          "total": 208
+        }
+      },
+      {
+        "fit": {
+          "class_counts": {
+            "def_front": 500,
+            "ok_front": 332
+          },
+          "class_proportions": {
+            "def_front": 0.6009615384615384,
+            "ok_front": 0.39903846153846156
+          },
+          "total": 832
+        },
+        "fold": 4,
+        "validation": {
+          "class_counts": {
+            "def_front": 125,
+            "ok_front": 83
+          },
+          "class_proportions": {
+            "def_front": 0.6009615384615384,
+            "ok_front": 0.39903846153846156
+          },
+          "total": 208
+        }
+      },
+      {
+        "fit": {
+          "class_counts": {
+            "def_front": 500,
+            "ok_front": 332
+          },
+          "class_proportions": {
+            "def_front": 0.6009615384615384,
+            "ok_front": 0.39903846153846156
+          },
+          "total": 832
+        },
+        "fold": 5,
+        "validation": {
+          "class_counts": {
+            "def_front": 125,
+            "ok_front": 83
+          },
+          "class_proportions": {
+            "def_front": 0.6009615384615384,
+            "ok_front": 0.39903846153846156
+          },
+          "total": 208
+        }
+      }
+    ],
+    "index_reference": "Zero-based positions in sorted train.csv rows only",
+    "n_splits": 5,
+    "random_state": 42,
+    "shuffle": true,
+    "strategy": "StratifiedKFold",
+    "test_images_in_folds": 0,
+    "validation_appearances_per_training_image": 1
+  },
+  "fully_leakage_safe": false,
+  "holdout_strategy": "stratified_image_split",
+  "manifest_sha256": {
+    "test.csv": "740f2e053dc69ee89351097e5b2a7abaf6b4fa09272637d02185caa5d0afa8bf",
+    "train.csv": "8775c7592975e2d0b20fa15101d9d93bb68f7061c986a5eace812f5edc5f34c4"
+  },
+  "near_candidate_pairs": 3485,
+  "near_pairs_crossing_cv": 1892,
+  "near_pairs_crossing_holdout": 1019,
+  "near_threshold": 4,
+  "no_images_discarded": true,
+  "non_singleton_independence_groups": 0,
+  "seed": 42,
+  "source_inventory_sha256": "d3ecba68cd0c1f166268d17d3558b680e8cde6b6e69aaa9d7508d8a2970e6fdd",
+  "split_status": "provisional",
+  "target_test_fraction": 0.2,
+  "test": {
+    "class_counts": {
+      "def_front": 156,
+      "ok_front": 104
+    },
+    "class_proportions": {
+      "def_front": 0.6,
+      "ok_front": 0.4
+    },
+    "total": 260
+  },
+  "train": {
+    "class_counts": {
+      "def_front": 625,
+      "ok_front": 415
+    },
+    "class_proportions": {
+      "def_front": 0.6009615384615384,
+      "ok_front": 0.39903846153846156
+    },
+    "total": 1040
+  },
+  "unresolved_near_pairs": 3485,
+  "validation_passed": true,
+  "verified_group_file_sha256": null,
+  "versions": {
+    "Pillow": "13.0.0",
+    "numpy": "2.5.4",
+    "opencv-python": "5.0.0.93",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1"
+  },
+  "warnings": [
+    "Unknown physical-part relationships are not ruled out; the split is provisional.",
+    "Similarity candidates are retained and not automatically grouped or discarded.",
+    "Shared filename counters are not verified physical-part identifiers.",
+    "Resolve cross-boundary candidates before interpreting final test performance.",
+    "Fit future scaling and feature selection inside training/CV pipelines only.",
+    "Do not select models, features, thresholds, or hyperparameters using test outcomes."
+  ]
+}

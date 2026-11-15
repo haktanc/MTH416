@@ -1,0 +1,18 @@
+{
+  "cv_strategy": "StratifiedKFold",
+  "holdout_strategy": "stratified_image_split",
+  "n_splits": 5,
+  "near_threshold": 4,
+  "seed": 42,
+  "shuffle": true,
+  "source_inventory_sha256": "d3ecba68cd0c1f166268d17d3558b680e8cde6b6e69aaa9d7508d8a2970e6fdd",
+  "target_test_fraction": 0.2,
+  "verified_group_file_sha256": null,
+  "versions": {
+    "Pillow": "13.0.0",
+    "numpy": "2.5.4",
+    "opencv-python": "5.0.0.93",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1"
+  }
+}

@@ -1,0 +1,8 @@
+# Initialization, auditing, data splitting, and cross-validation dependencies.
+-r requirements-stage1.txt
+
+# Planned analysis dependencies; not needed for the initialization entry point.
+pandas>=2.2
+matplotlib>=3.9
+seaborn>=0.13
+scikit-image>=0.25

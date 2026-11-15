@@ -1,0 +1,105 @@
+{
+  "blocking_issues": [],
+  "channel_counts": {
+    "3": 1300
+  },
+  "class_counts": {
+    "def_front": 781,
+    "ok_front": 519
+  },
+  "dataset": "data/raw/casting_512x512",
+  "dimensions": {
+    "512x512": 1300
+  },
+  "eligible_count": 1300,
+  "exact_file_pairs": 0,
+  "exact_pixel_only_pairs": 0,
+  "expected_class_counts": {
+    "def_front": 781,
+    "ok_front": 519
+  },
+  "file_extensions": {
+    ".jpeg": 1300
+  },
+  "filename_prefixes": {
+    "cast_def_0": 781,
+    "cast_ok_0": 519
+  },
+  "formats": {
+    "JPEG": 1300
+  },
+  "grayscale_count": 1300,
+  "image_count": 1300,
+  "images_with_exif": 0,
+  "inventory_sha256": "d3ecba68cd0c1f166268d17d3558b680e8cde6b6e69aaa9d7508d8a2970e6fdd",
+  "metadata_info_keys": {
+    "jfif,jfif_density,jfif_unit,jfif_version": 1300
+  },
+  "modes": {
+    "RGB": 1300
+  },
+  "near_candidate_images": 1107,
+  "near_candidate_pairs": 3485,
+  "near_cross_class_pairs": 264,
+  "near_threshold": 4,
+  "perceptual_hash_bits": 63,
+  "physical_part_groups_verified": false,
+  "readable_count": 1300,
+  "repeated_filename_indices": {
+    "1091": 2,
+    "1155": 2,
+    "1187": 2,
+    "1192": 2,
+    "1589": 2,
+    "1715": 2,
+    "1817": 2,
+    "2060": 2,
+    "2437": 2,
+    "2614": 2,
+    "3136": 2,
+    "3199": 2,
+    "3246": 2,
+    "3812": 2,
+    "3869": 2,
+    "3916": 2,
+    "4697": 2,
+    "5339": 2,
+    "5524": 2,
+    "5573": 2,
+    "583": 2,
+    "6236": 2,
+    "6239": 2,
+    "6738": 2,
+    "6869": 2,
+    "688": 2,
+    "7076": 2,
+    "7117": 2,
+    "7338": 2,
+    "7664": 2,
+    "773": 2,
+    "8067": 2,
+    "8208": 2,
+    "8278": 2,
+    "833": 2,
+    "8646": 2,
+    "93": 2,
+    "9591": 2
+  },
+  "transforms_screened": [
+    "identity",
+    "rotate_90",
+    "rotate_180",
+    "rotate_270",
+    "mirror",
+    "mirror_rotate_90",
+    "mirror_rotate_180",
+    "mirror_rotate_270"
+  ],
+  "warnings": [
+    "Perceptual similarity is not proof of a shared source or physical part.",
+    "The common filename counter and numeric suffixes are not verified part IDs.",
+    "EXIF or filename coincidences are recorded, not automatically trusted as groups.",
+    "No near-duplicate screen can exclude every transformation or shared part.",
+    "Class names are structural labels; visual label correctness is not verified."
+  ]
+}
