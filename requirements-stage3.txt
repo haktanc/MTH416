@@ -1,0 +1,7 @@
+# Native-resolution CPU HOG/GLCM extraction; existing pins are preserved.
+-r requirements-stage2.txt
+scikit-image==0.26.0
+networkx==3.7
+imageio==2.38.2
+tifffile==2026.11.12
+lazy-loader==0.6

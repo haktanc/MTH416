@@ -3,15 +3,17 @@
 ## Surface Defect Detection in Casting Pump Impeller Images Using Texture Analysis and Machine Learning
 
 This academic project investigates surface defect detection using classical
-image processing, texture descriptors, and machine learning. Planned methods
-include HOG, GLCM, Support Vector Machines, and Random Forests. Deep learning
+image processing, texture descriptors, and machine learning. Implemented texture
+methods include HOG and GLCM; classifiers planned for Stage 4 are Support Vector
+Machines and Random Forests. Deep learning
 and GPU acceleration are not required. Execution is local and CPU based.
 
-Stages 1 and 2 provide dataset preparation, exploratory data analysis (EDA),
-and stateless grayscale preprocessing. The saved manifests remain
+Stages 1-3 provide dataset preparation, exploratory data analysis (EDA),
+stateless grayscale preprocessing, and native-resolution feature extraction.
+The saved manifests remain
 **provisional**, because source and physical-part independence cannot be
-established from the available data. No HOG/GLCM experiments, classifier
-training, or model selection have run.
+established from the available data. HOG/GLCM resource benchmarks and feature
+caches are available; classifier training and model selection have not run.
 
 ## Dataset selection
 
@@ -68,12 +70,14 @@ MTH416/
 |   |-- templates/pair_review.html
 |   |-- preprocessing.py
 |   |-- feature_extraction.py
+|   |-- feature_pipeline.py
 |   |-- model_training.py
 |   |-- evaluation.py
 |   `-- visualization.py
 |-- results/
 |   |-- figures/.gitkeep             # PNG figures; trackable
 |   |-- tables/                     # Audit, CV, and validation reports
+|   |-- cache/features/             # Large local .npy feature caches; ignored
 |   `-- models/.gitkeep              # Generated binaries ignored
 |-- tests/
 |   |-- __init__.py
@@ -82,6 +86,8 @@ MTH416/
 |   |-- test_data_splitting.py
 |   |-- test_preprocessing.py
 |   |-- test_eda.py
+|   |-- test_feature_extraction.py
+|   |-- test_feature_pipeline.py
 |   `-- test_pipeline.py             # Existing analysis tests; deferred
 |-- notebooks/                      # Existing empty directory; unused
 |-- main.py
@@ -89,6 +95,7 @@ MTH416/
 |-- requirements-init.txt
 |-- requirements-stage1.txt
 |-- requirements-stage2.txt
+|-- requirements-stage3.txt
 |-- requirements.txt
 |-- README.md
 `-- .gitignore
@@ -106,6 +113,7 @@ Jupyter dependencies, Colab services, or cloud storage are used.
 | `reporting.py` | Deterministic CSV/JSON serialization and raw-directory output protection. |
 | `preprocessing.py` | Validated grayscale arrays, configurable resizing, and safe per-image Min-Max normalization with float32 outputs. |
 | `feature_extraction.py` | Configurable HOG, GLCM, and combined feature vectors. |
+| `feature_pipeline.py` | Training-only benchmarks, resource gates, streaming split-specific caches, provenance and read-only loading. |
 | `model_training.py` | CPU classifiers, training-only cross-validation, hyperparameter search, and serialization. |
 | `evaluation.py` | Accuracy, precision, recall, F1, confusion matrices, ROC-AUC, and comparison tables. |
 | `visualization.py` | Publication-quality EDA/preprocessing PNGs and preserved helpers for later texture/model plots. |
@@ -124,7 +132,7 @@ agreement, split membership, unique entries, identities, and deterministic order
 
 ## Local Python environment
 
-The initialization, Stage 1, and Stage 2 environment uses Python 3.14.7 on Windows.
+The Stage 1-3 environment uses Python 3.14.7 on Windows.
 Use the existing `.venv/`. Only if it is absent, create it from an installed
 Python interpreter:
 
@@ -132,11 +140,11 @@ Python interpreter:
 python -m venv .venv
 ```
 
-Install the pinned Stage 2 dependencies and run the project from the
+Install the pinned Stage 3 dependencies and run the project from the
 repository root in the VS Code PowerShell terminal:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -r requirements-stage2.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-stage3.txt
 .\.venv\Scripts\python.exe main.py
 .\.venv\Scripts\python.exe -m pytest -q
 ```
@@ -168,9 +176,11 @@ Initialization requires NumPy and OpenCV; pytest supports verification.
 adds Pillow for image/metadata auditing and scikit-learn plus its dependencies
 for splitting and CV. Their installation does not run machine learning models.
 `requirements-stage2.txt` adds Matplotlib and its plotting dependencies.
-`requirements.txt` also lists the planned pandas, seaborn, and scikit-image
-dependencies. These additional libraries remain deferred; Stage 2 does not
-require them.
+`requirements-stage3.txt` adds scikit-image 0.26.0 and pins its additional
+dependencies (networkx, imageio, tifffile and lazy-loader), preserving all
+Stage 2 pins. Dependency compatibility was checked with `pip check`.
+`requirements.txt` includes Stage 3 plus optional planned pandas and seaborn;
+those two packages remain deferred and are not required by Stages 1-3.
 Before later analysis work, install and validate the full environment with:
 
 ```powershell
@@ -318,7 +328,7 @@ Run from the repository root with the pinned Stage 1 environment:
 .\.venv\Scripts\python.exe -m src.prepare_splits --validate-only
 
 # Initialization and Stage 1 tests only; no feature extraction or model fitting.
-.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m pytest -q tests/test_initialization.py tests/test_dataset_audit.py tests/test_data_splitting.py
 ```
 
 Preparation checks complete coverage, valid repository-relative paths, class
@@ -341,7 +351,7 @@ Meaningful artifacts under `results/tables/` include:
   only to verify preservation, not used for primary audit/split decisions.
 - `visual_review_notes.md`, a limited review record not overwritten by scripts.
 
-`pytest.ini` selects initialization, audit, split, preprocessing, and EDA tests.
+`pytest.ini` selects initialization, audit, split, preprocessing, EDA, and feature tests.
 They use temporary
 fixtures and exercise corruption, exact byte/pixel duplicates, metadata
 differences, group isolation, duplicate-leakage rejection, manifest tampering,
@@ -354,8 +364,8 @@ mode is not exposed by the initialization CLI.
 for provisional development. Reliable final performance claims require review
 of unresolved similarities and better source/physical-part provenance. Neither
 the absence of exact duplicates nor passing validation proves independence of
-unknown physical parts. Scientific validation of HOG/GLCM helpers and all model
-experiments remain future work.
+unknown physical parts. Descriptor correctness is validated in Stage 3;
+classification performance evaluation remains future work.
 
 ## Stage 2: EDA and preprocessing
 
@@ -477,8 +487,8 @@ not a manual choice of visually persuasive examples.
 # Explicit opt-in only: keep any non-native experiment in a separate directory.
 .\.venv\Scripts\python.exe -m src.eda --size 384 400 --seed 42 --output-dir results/optional_384x400
 
-# All relevant tests, without HOG/GLCM extraction or model training.
-.\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider
+# Stage 1-2 tests only, without HOG/GLCM extraction or model training.
+.\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider tests/test_initialization.py tests/test_dataset_audit.py tests/test_data_splitting.py tests/test_preprocessing.py tests/test_eda.py
 ```
 
 The optional `--samples-per-class` accepts 1-6 samples for compact figures.
@@ -591,6 +601,190 @@ fingerprint/review calculations, not project preprocessing defaults. They do
 not change raw images or processed image dimensions. Histogram bin counts of
 256 and grayscale values in [0, 255] are intensity conventions, not resolutions.
 
+## Stage 3: Native-resolution HOG and GLCM
+
+All feature inputs are the original **512 x 512** grayscale images after the
+existing stateless per-image Min-Max transform. No spatial resizing, learned
+scaler, PCA, feature selection, augmentation, or classifier fitting is applied.
+Both HOG configurations are retained for Stage 4 comparison using the existing
+training-only CV assignments. Test descriptors do not select a configuration.
+
+### Descriptor definitions and ordering
+
+HOG uses **9 unsigned orientation bins, 2 x 2 cells per block, L2-Hys block
+normalization, one-cell block stride**, and either **8 x 8** or **16 x 16**
+pixels per cell. `transform_sqrt=False`, `channel_axis=None`, and
+`feature_vector=True` are explicit. At 512 x 512 there are no partial cells:
+
+- 8 x 8: 64 x 64 cells, 63 x 63 blocks, **142,884 features**.
+- 16 x 16: 32 x 32 cells, 31 x 31 blocks, **34,596 features**.
+
+The length is `(height/cell_height - 1) * (width/cell_width - 1) * 2 * 2 * 9`.
+Flattening follows scikit-image's block-row, block-column, cell-row,
+cell-column, orientation order. Descriptors and cached matrices are float32.
+HOG renderings visualize gradient structure; they are not the flattened,
+block-normalized descriptors and are not classifier explanations.
+
+GLCM quantizes normalized pixels with `q = min(floor(32 * z), 31)`, including
+the upper endpoint safely. It uses **32 levels**, distances **[1, 2]**, and
+angles **[0, pi/4, pi/2, 3*pi/4]** (0, 45, 90, 135 degrees), with
+`symmetric=True` and `normed=True`. Every distance/angle matrix is a symmetric
+probability distribution. Pixel offsets follow scikit-image's integer-grid
+distance/angle convention.
+
+For matrix P, Contrast is `sum((i-j)^2 P)`, Dissimilarity is
+`sum(abs(i-j) P)`, Homogeneity is `sum(P/(1+(i-j)^2))`, ASM is `sum(P^2)`,
+Energy is `sqrt(ASM)`, and Correlation is the standardized joint covariance.
+For degenerate constant inputs, scikit-image reports correlation 1 by convention;
+this behavior is tested. **48 features** are retained without averaging over
+distances or angles: six properties x two distances x four angles. Ordering is
+Contrast, Dissimilarity, Homogeneity, Energy, Correlation, ASM; within each
+property, distance then angle. Normalized matrices use float64 internally;
+the flattened cached descriptor uses float32.
+
+The implementations follow the official
+[scikit-image HOG](https://scikit-image.org/docs/0.26.x/api/skimage.feature.html#skimage.feature.hog),
+[GLCM](https://scikit-image.org/docs/0.26.x/api/skimage.feature.html#skimage.feature.graycomatrix),
+and [property](https://scikit-image.org/docs/0.26.x/api/skimage.feature.html#skimage.feature.graycoprops)
+definitions. Synthetic tests check block geometry, constant gradients,
+quantization boundaries, and hand-computed alternating-stripe GLCMs.
+
+### Measured resource comparison
+
+The same **50 training images (30 defective, 20 OK)** are selected with seed
+42 and proportional class allocation, independently of test pixels. Each method
+runs sequentially in a fresh CPU process with one untimed warm-up. OpenCV and
+common numerical thread pools are constrained to one thread. Descriptor time
+excludes JPEG decoding and normalization; end-to-end time includes them and
+per-vector validation. OS peak RSS includes native allocations and imports,
+not just Python objects; the baseline is recorded after warm-up.
+
+| Method | Dimensions | Descriptor time, 50 images | End-to-end time | Worker peak RSS | All-image float32 payload |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| HOG 8 x 8 | 142,884 | 6.3749 s | 6.6706 s | 54.21 MiB | 708.5770 MiB |
+| HOG 16 x 16 | 34,596 | 3.1113 s | 3.3786 s | 53.25 MiB | 171.5652 MiB |
+| GLCM | 48 | 0.4298 s | 0.7492 s | 70.81 MiB | 0.2380 MiB |
+
+These are actual single-run measurements on the current Windows CPU environment,
+not speed guarantees or classification results. The raw payload for all three
+methods is **923,145,600 bytes (880.3802 MiB)**; .npy headers and labels are extra.
+HOG 16 x 16 has about 4.13 times fewer features. That resource advantage does not
+establish better classification performance. Separate full-extraction timings
+and file sizes are recorded in `feature_cache_inventory.csv` and
+`feature_run_summary.json`.
+
+The completed full-dataset extraction, file writes and cache validation took
+**261.73 seconds**. The extraction invocation reusing the saved benchmark took
+**274.64 seconds through its preservation checks and figure exports**, excluding
+the earlier benchmark invocation and final metadata/report serialization.
+Its OS peak working set was **679.95 MiB**, including memory-mapped validation
+pages and plotting allocations; it finished at 215.13 MiB. Streaming avoids
+whole-matrix write allocations, but memory-mapped pages can still contribute
+to the observed working set during validation. All eight cache files, including
+labels and headers, occupy **923,147,924 bytes (880.3825 MiB)**.
+
+Feasibility uses training benchmark costs only: each method must project to at
+most 600 seconds, available RAM must exceed both 512 MiB and twice measured
+worker peak RSS, and selected caches must leave 10% disk headroom. Both HOG
+configurations and GLCM passed. This is a resource gate, not model selection.
+
+### Reproduction and cache use
+
+```powershell
+# Training-only measurements and benchmark figure, without full extraction.
+$env:OMP_NUM_THREADS = '1'
+$env:OPENBLAS_NUM_THREADS = '1'
+$env:MKL_NUM_THREADS = '1'
+.\.venv\Scripts\python.exe -B -m src.feature_pipeline --benchmark-only
+
+# Reuse matching benchmark metadata, then cache feasible configurations.
+.\.venv\Scripts\python.exe -B -m src.feature_pipeline --reuse-benchmark
+
+# All Stage 1-3 correctness tests; no classifier training.
+.\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider
+```
+
+Without flags, the workflow benchmarks and then extracts feasible configurations.
+Existing cache files are never silently overwritten. A deliberate fresh run can
+use `--cache-dir results/cache/features_new_run`; source, configuration,
+dependency or input changes require a fresh benchmark. Such a run refreshes the
+current Stage 3 reports/indexes. `--max-projected-seconds` changes the documented
+resource time budget; it does not affect descriptor values.
+
+A plotting-only quality correction clarified pixels-per-cell labels and panel
+spacing after extraction. Metadata retains the plotting hash used during the
+measurements, the final plotting hash, and the **7.04-second** rendering refresh.
+Descriptor/pipeline sources, measured benchmark values, sample GLCM values and
+all cache checksums were verified unchanged; features were not re-extracted.
+
+Features are streamed one image and one descriptor at a time into uncompressed
+.npy files, using bounded write buffers. Complete matrices and a combined HOG+GLCM
+matrix are never assembled in RAM or duplicated on disk. After extraction,
+checks validate dimensions, dtype, finite values in small row chunks, SHA-256
+checksums, labels and exact manifest row ordering. Raw-image fingerprints must
+match Stage 1; manifest and CV fingerprints are checked before and after the run.
+
+Large files remain **local and ignored** in `results/cache/features/`:
+
+- `train_hog8.npy`, `test_hog8.npy`: 1,040/260 rows x 142,884 columns.
+- `train_hog16.npy`, `test_hog16.npy`: 1,040/260 rows x 34,596 columns.
+- `train_glcm.npy`, `test_glcm.npy`: 1,040/260 rows x 48 columns.
+- `train_labels.npy`, `test_labels.npy`: manifest-aligned int8 labels.
+
+Read without allocating a whole matrix:
+
+```python
+from src.data_loader import PROJECT_ROOT
+from src.feature_pipeline import load_cached_features
+
+x_train, y_train, row_index = load_cached_features(PROJECT_ROOT, 'hog8', 'train')
+# x_train is a read-only np.memmap. Existing validation_fold values are in row_index.
+```
+
+The loader rejects changed input/CV fingerprints, configurations, implementation
+sources, dependency versions, cache bytes, index files, labels, or row mappings.
+Checksum verification is enabled by default. Cache generation validates raw
+content; the loader does not rehash every source image on each load. Future
+Stage 4 fitting must use the saved folds and fit any learned scaler only on
+each fold's training rows. Avoid materializing both large HOG matrices or all
+CV copies simultaneously.
+
+### Stage 3 outputs and interpretation
+
+Trackable figures in `results/figures/` are 300-DPI English-labeled PNGs:
+
+- `feature_benchmark.png`: measured training costs and projected payload sizes.
+- `feature_hog_comparison.png`: normalized inputs and HOG renderings at both
+  cell scales for the first reviewed Stage 2 training sample of each class.
+  Renderings share a per-row display range with a 99th-percentile upper bound.
+- `feature_glcm_matrices.png`: distance-1 probabilities for both sample images
+  at all four angles, with a shared color range; distance 2 is also extracted.
+- `feature_glcm_properties.png`: all six properties at both distances and all
+  angles for those same two images. These illustrative curves do not prove
+  population class separation.
+
+Technical tables and metadata in `results/tables/`:
+
+- `feature_benchmark.csv`, `feature_benchmark_samples.csv`, and
+  `feature_benchmark_summary.json`: actual timing/memory, the exact 50 training
+  identities, parameters, versions and source/input fingerprints.
+- `feature_train_index.csv`, `feature_test_index.csv`: cache row, image identity,
+  path, label and split; training rows retain saved validation-fold membership.
+- `feature_cache_inventory.csv`: cache shapes, sizes, hashes and measured times.
+- `feature_visualization_samples.csv`, `feature_sample_glcm.csv`: two reviewed
+  training identities and their 96 property/distance/angle values.
+- `feature_run_summary.json`, `feature_report.md`: measured extraction outcomes,
+  feasibility decisions, preservation checks, methodology and limitations.
+
+Final validation checked all **3,900 cached descriptor rows** for finiteness
+and valid descriptor/property bounds. Eighteen recomputed vectors (first,
+middle and last image in each split, for all three methods) matched cached
+values exactly. Manifest ordering, labels, all saved CV fold assignments and
+300-DPI PNG metadata passed checks. All four figures were visually reviewed.
+The final Stage 1-3 suite passed **151 tests in 30.26 seconds**, including a
+regression check for nonoverlapping HOG panel titles and explicit cell-size
+units. No model was fitted and no best feature configuration was selected.
+
 ## Git and dataset management
 
 The existing GitHub repository is
@@ -621,13 +815,14 @@ change remote configuration. Review staged changes before making a commit.
 
 ## Planned development stages
 
-Stage 2 is complete. Unconfirmed perceptual-similarity candidates are advisory
+Stages 2 and 3 are complete. Unconfirmed perceptual-similarity candidates are advisory
 and do not block development. Keep the accepted manifests and saved CV
 assignments unchanged. Unknown physical-part relationships remain a limitation
 to disclose; only substantiated new evidence would justify a separately
 reviewed protocol change, without consulting model/test performance.
 
-1. Validate HOG and GLCM configurations in the later feature-extraction stage.
+1. Compare both cached HOG configurations and GLCM during Stage 4 using only
+   training CV performance; do not select them using test descriptors.
 2. Fit and tune CPU-based SVM and Random Forest models using training data only
    and the existing saved CV assignments.
 3. Evaluate on held-out data and save actual metrics and comparison tables.

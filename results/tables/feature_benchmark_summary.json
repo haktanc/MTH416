@@ -1,0 +1,634 @@
+{
+  "benchmarks": [
+    {
+      "baseline_rss_bytes": 44912640,
+      "cpu_seconds": 6.4375,
+      "decode_normalize_seconds": 0.2697494000894949,
+      "end_to_end_seconds": 6.670564400003059,
+      "feature_dimension": 142884,
+      "feature_dtype": "float32",
+      "feature_ms_per_image": 127.49720399908256,
+      "feature_seconds": 6.374860199954128,
+      "images": 50,
+      "median_feature_ms": 126.86659999599215,
+      "method": "hog8",
+      "peak_rss_bytes": 56848384,
+      "rss_bytes": 46333952,
+      "vector_bytes": 571536
+    },
+    {
+      "baseline_rss_bytes": 45051904,
+      "cpu_seconds": 3.328125,
+      "decode_normalize_seconds": 0.24592389998724684,
+      "end_to_end_seconds": 3.378554399998393,
+      "feature_dimension": 34596,
+      "feature_dtype": "float32",
+      "feature_ms_per_image": 62.22640199935995,
+      "feature_seconds": 3.1113200999679975,
+      "images": 50,
+      "median_feature_ms": 60.45755001832731,
+      "method": "hog16",
+      "peak_rss_bytes": 55836672,
+      "rss_bytes": 46166016,
+      "vector_bytes": 138384
+    },
+    {
+      "baseline_rss_bytes": 65519616,
+      "cpu_seconds": 0.734375,
+      "decode_normalize_seconds": 0.3187182000547182,
+      "end_to_end_seconds": 0.7492341999895871,
+      "feature_dimension": 48,
+      "feature_dtype": "float32",
+      "feature_ms_per_image": 8.595100001548417,
+      "feature_seconds": 0.42975500007742085,
+      "images": 50,
+      "median_feature_ms": 8.335649996297434,
+      "method": "glcm",
+      "peak_rss_bytes": 74248192,
+      "rss_bytes": 66990080,
+      "vector_bytes": 192
+    }
+  ],
+  "measurement_visualization_sha256": "442c04b0c0886fe2d0768bb87b68aaf2fb18e3ab92795c5d62dfbf22ff138197",
+  "provenance": {
+    "configuration": {
+      "angles_degrees": [
+        0,
+        45,
+        90,
+        135
+      ],
+      "dtype": "float32",
+      "glcm_feature_order": "property, distance, angle (C order)",
+      "glcm_normed": true,
+      "glcm_properties": [
+        "contrast",
+        "dissimilarity",
+        "homogeneity",
+        "energy",
+        "correlation",
+        "ASM"
+      ],
+      "glcm_quantization": "min(floor(normalized_pixel * 32), 31)",
+      "glcm_symmetric": true,
+      "grayscale": "OpenCV IMREAD_GRAYSCALE",
+      "hog_transform_sqrt": false,
+      "image_shape": [
+        512,
+        512
+      ],
+      "methods": {
+        "glcm": {
+          "angles": [
+            0.0,
+            0.7853981633974483,
+            1.5707963267948966,
+            2.356194490192345
+          ],
+          "block_norm": "L2-Hys",
+          "cells_per_block": [
+            2,
+            2
+          ],
+          "distances": [
+            1,
+            2
+          ],
+          "glcm_levels": 32,
+          "orientations": 9,
+          "pixels_per_cell": [
+            8,
+            8
+          ]
+        },
+        "hog16": {
+          "angles": [
+            0.0,
+            0.7853981633974483,
+            1.5707963267948966,
+            2.356194490192345
+          ],
+          "block_norm": "L2-Hys",
+          "cells_per_block": [
+            2,
+            2
+          ],
+          "distances": [
+            1,
+            2
+          ],
+          "glcm_levels": 32,
+          "orientations": 9,
+          "pixels_per_cell": [
+            16,
+            16
+          ]
+        },
+        "hog8": {
+          "angles": [
+            0.0,
+            0.7853981633974483,
+            1.5707963267948966,
+            2.356194490192345
+          ],
+          "block_norm": "L2-Hys",
+          "cells_per_block": [
+            2,
+            2
+          ],
+          "distances": [
+            1,
+            2
+          ],
+          "glcm_levels": 32,
+          "orientations": 9,
+          "pixels_per_cell": [
+            8,
+            8
+          ]
+        }
+      },
+      "normalization": "Per-image Min-Max; constants become zeros; no resizing"
+    },
+    "input_sha256": {
+      "data/splits/test.csv": "740f2e053dc69ee89351097e5b2a7abaf6b4fa09272637d02185caa5d0afa8bf",
+      "data/splits/train.csv": "8775c7592975e2d0b20fa15101d9d93bb68f7061c986a5eace812f5edc5f34c4",
+      "results/tables/cv_folds.csv": "9b96102e5e022af37a16c4a1b3103d7e972848a2de3772766531882e160d4364"
+    },
+    "source_code_sha256": {
+      "src/data_loader.py": "7cd6e0ed47b876d3a082f9f11316ceb5ab5b16ff94a9a2eee6eff8db585dd64a",
+      "src/feature_extraction.py": "32cc48fb35b0dea2e38e1b56a6a03af85fd2e5886f32189c2175e16deb7f547a",
+      "src/feature_pipeline.py": "a8a006f3fab8fe467b13309af4cd363fbbe458fa63677bcd52185a6d9f7551e5",
+      "src/preprocessing.py": "407b7c27cb7e0606e1cb1c11352561891dd68c9b2366204b57fa25acb37c6ead",
+      "src/visualization.py": "bda58eac2c053a775b18aa0f4fecc49cf7e5462e59eb2b3c7bb71d0aa28cfa3c"
+    },
+    "source_inventory_sha256": "d3ecba68cd0c1f166268d17d3558b680e8cde6b6e69aaa9d7508d8a2970e6fdd",
+    "versions": {
+      "numpy": "2.5.4",
+      "opencv-python": "5.0.0.93",
+      "scikit-image": "0.26.0",
+      "scipy": "1.18.1"
+    }
+  },
+  "samples": [
+    {
+      "benchmark_row": 0,
+      "class_name": "def_front",
+      "image_id": "f17a154b733ffa99f140527a6eed2985104246958c913e57e8020cc3484008e9",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_1705.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 1,
+      "class_name": "def_front",
+      "image_id": "ac6dd149778ac994d8fae9085fa663c54f371794044a44a3abbed33d978d592c",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_1721.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 2,
+      "class_name": "def_front",
+      "image_id": "57bf14b1322fd90dbb1caad837c7b2eda6a3ec8a480706e8800c32ec55f56fae",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_1777.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 3,
+      "class_name": "def_front",
+      "image_id": "44451a9f166cedbb7cca3464c62fc6637f9e299be2d565b0a40304079a94243f",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_2141.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 4,
+      "class_name": "def_front",
+      "image_id": "bd7a5d52911741f9b47ef4ee6da831f3b0d436acc6091099efe2726e6647547b",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_2624.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 5,
+      "class_name": "def_front",
+      "image_id": "6941958f62e6e5e154b29bdffcf42a51f2383cb50e51e15e95f1cac5ac671093",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_2733.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 6,
+      "class_name": "def_front",
+      "image_id": "295b13a9a4884631d707f471d6562efe0ee0c15cd53465365d6272dea5b2c77d",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_4355.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 7,
+      "class_name": "def_front",
+      "image_id": "64f8e209fca41f90ae035afe489b9c8ab5f2b1f24a50c8c27786f62e06a4d9c8",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_4671.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 8,
+      "class_name": "def_front",
+      "image_id": "f2c3cd9c922045ab9d8658157ab0ac4d1db240e92baf5ce03d9df83df38617fe",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_4780.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 9,
+      "class_name": "def_front",
+      "image_id": "737b84aaa568349cda08990662cd5f7e8ffe7a07160498725231beb57a231752",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_4801.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 10,
+      "class_name": "def_front",
+      "image_id": "8308eba1c4812637cbe0943d6ee19eb0053b3ddb5f3ae9e5c6422f69012d7abf",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_5006.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 11,
+      "class_name": "def_front",
+      "image_id": "f40920c0579ade540dc33f11fc8edaff1af9433f18a51c6aa29aa2420e5fbbf7",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_5008.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 12,
+      "class_name": "def_front",
+      "image_id": "c87ba80b53cd9b0f4fc4a9c87b6991facd2fe9008ee402ebaf099a0211b81f40",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_5339.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 13,
+      "class_name": "def_front",
+      "image_id": "d8a1028706195158be0f6e248f32ba72b350f60a03039dc9d7252709d8ddc6f5",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_5430.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 14,
+      "class_name": "def_front",
+      "image_id": "86e036c1b9927de78b617c80d1d92bdd153be52ef98466bc0981c719659f8924",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_5571.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 15,
+      "class_name": "def_front",
+      "image_id": "70025200a6ed2d6b85a66c7ba474fee60f93c6f31791d2473367028082818e20",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_5933.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 16,
+      "class_name": "def_front",
+      "image_id": "14e471b00a4e5f916cf26905faf0304078b1af443bf7b9f9621b70b06b573105",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_6817.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 17,
+      "class_name": "def_front",
+      "image_id": "bbe9c35ea6e839aef172e62b5b47d62e39651a241cb231e4938888280753a7a1",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_6884.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 18,
+      "class_name": "def_front",
+      "image_id": "8ed423c5a0f84626757801368c9c875ceacbcb750bf69d94189b9fd09cc79dd3",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_7248.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 19,
+      "class_name": "def_front",
+      "image_id": "a0be9ee3c862a580039937219e9003da625cb817394945481cbda205b6b8cc18",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_7420.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 20,
+      "class_name": "def_front",
+      "image_id": "fc357723a19c64ce7e8fa0e5e163626bba70f33182f5249a2d4539a771249af7",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_7503.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 21,
+      "class_name": "def_front",
+      "image_id": "b34788eab128bdb78a71113fdec245a99f9b0fc50dc478166770c80cb523651a",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_7664.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 22,
+      "class_name": "def_front",
+      "image_id": "bf37b6b3f6aa5a6e15db17169acdb8336a1a2343f33e3c2b87dcc23d9bcfc877",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_767.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 23,
+      "class_name": "def_front",
+      "image_id": "c517c2b7d68a1a84e5f4aed2d6b5d25add130aabdd750640f24265d99379c9c9",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_7844.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 24,
+      "class_name": "def_front",
+      "image_id": "ac5fcc930f462f45b5a4ba1608b06f561162fb5f10d36338269c7d6b52e7391b",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_7905.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 25,
+      "class_name": "def_front",
+      "image_id": "b2b9f310985cd86fb5a6dc8db28f73513d335898288b08211cebf343baf7bad8",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_8288.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 26,
+      "class_name": "def_front",
+      "image_id": "38f331786626975d61d472e6d590afde615a5d352176fe837f8a5e0acdda468c",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_833.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 27,
+      "class_name": "def_front",
+      "image_id": "758993e882b58186a571717ec7adbc288c8241ee4a73988d9c505807a1851506",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_8340.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 28,
+      "class_name": "def_front",
+      "image_id": "db99375e16800f6a365cbe0863b8af88d1872d43575666239422fa4c610865bd",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_9175.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 29,
+      "class_name": "def_front",
+      "image_id": "5a8d8c7301a7efa327a63732cce1d9d6d4a12bdd469f25b3c7d6ed811832ffd2",
+      "image_path": "data/raw/casting_512x512/def_front/cast_def_0_9480.jpeg",
+      "label": 1,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 30,
+      "class_name": "ok_front",
+      "image_id": "b068745ad898d11e55d295008f7e7ae16e8be786aa156697744678eaec79efda",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_1644.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 31,
+      "class_name": "ok_front",
+      "image_id": "2706fd4d172a192573b629156159693ddb4e03f8bd940d64a4332b3fefedf4ec",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_2162.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 32,
+      "class_name": "ok_front",
+      "image_id": "81e623ed63eb499bf61e995f7f596f8b5f21660a3475cbccbc7318bea28d161c",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_2614.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 33,
+      "class_name": "ok_front",
+      "image_id": "b0a80e7af15171d2f4ec940f7fda97e0d054b7c13073958f7a71fec5b52860dc",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_2865.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 34,
+      "class_name": "ok_front",
+      "image_id": "d3ac4c4d10ddc57fef285e1f7c093d1c925ccf0820f6fb6cdd0bc11d68660455",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_373.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 35,
+      "class_name": "ok_front",
+      "image_id": "d0ff50fa0e1c5b85b48673005a980fa893c1e705d4546110e24b243d5c19b979",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_3869.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 36,
+      "class_name": "ok_front",
+      "image_id": "a3caa97d5da8df0ea482eb68afc8355f88c443381e3c03274cd231e41ca49fa1",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_4081.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 37,
+      "class_name": "ok_front",
+      "image_id": "296059415f635ffce03a5dc9c633d6c3247edb9cd70941a92962d128b90b0dbc",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_4141.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 38,
+      "class_name": "ok_front",
+      "image_id": "2c18bc792a5322c685b11c1889e06375d659c6f7cc15f2403088d442ad0fa930",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_4503.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 39,
+      "class_name": "ok_front",
+      "image_id": "1bbbaccad4d9c146d86c06f00a00d3a15838c21d87bad1cf568b1c09f378d3ef",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_5009.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 40,
+      "class_name": "ok_front",
+      "image_id": "6275351c8442794d241d2cb8a625f98f64688a6761ad99d1f7054865e42b1f52",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_5045.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 41,
+      "class_name": "ok_front",
+      "image_id": "7f4d45f13fcd8a20c7ab7ea50b98ad313c97aa5a7efc1d47be330360ba9ce919",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_5150.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 42,
+      "class_name": "ok_front",
+      "image_id": "2443e83ea2418b48e09721dc7181ad27411d85eacfff2c44c03c20e9e713a721",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_6119.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 43,
+      "class_name": "ok_front",
+      "image_id": "9e5271534adf881860102177c4ab1cf23edb2ec235121e50900dddf8045f5d34",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_688.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 44,
+      "class_name": "ok_front",
+      "image_id": "f2395931f639a07597008266fa8969e2606addca322f1acf053c426bb9f58f2c",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_7151.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 45,
+      "class_name": "ok_front",
+      "image_id": "4581b3600ab378fbcc6f7ffeee655e184a751bc1db7bc2ae42fecea0892a54b0",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_7366.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 46,
+      "class_name": "ok_front",
+      "image_id": "258d217efcf6fcba15e1340286f1ab32bf13228bb09e485d1c4c56fae8d4c54e",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_7872.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 47,
+      "class_name": "ok_front",
+      "image_id": "91400b2a4041a6b56e4b810da586306e558da6e18456a7bac432c8384586bf6a",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_8738.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 48,
+      "class_name": "ok_front",
+      "image_id": "ae682bfc34980c97183b650c72e22310b6273480392e8cdb7f74cb5f59ef7922",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_8751.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    },
+    {
+      "benchmark_row": 49,
+      "class_name": "ok_front",
+      "image_id": "455fc67ba71aa7834f91cfcb5223338d5866763e5d1872715c7b7a2eac511bb5",
+      "image_path": "data/raw/casting_512x512/ok_front/cast_ok_0_9260.jpeg",
+      "label": 0,
+      "seed": 42,
+      "split": "train"
+    }
+  ],
+  "visualization_refresh": {
+    "current_visualization_sha256": "bda58eac2c053a775b18aa0f4fecc49cf7e5462e59eb2b3c7bb71d0aa28cfa3c",
+    "descriptor_and_pipeline_sources_unchanged": true,
+    "feature_cache_checksums_unchanged": true,
+    "previous_visualization_sha256": "442c04b0c0886fe2d0768bb87b68aaf2fb18e3ab92795c5d62dfbf22ff138197",
+    "reason": "Visual QA: separate HOG panel rows, label pixels per cell explicitly, and use a shared GLCM legend.",
+    "render_wall_seconds": 7.036430999985896,
+    "sample_glcm_values_unchanged": true
+  }
+}

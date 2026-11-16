@@ -1,7 +1,6 @@
-# Initialization, dataset preparation, EDA, and preprocessing dependencies.
--r requirements-stage2.txt
+# Initialization, preparation, EDA, preprocessing, and feature dependencies.
+-r requirements-stage3.txt
 
 # Planned analysis dependencies; not needed for the initialization entry point.
 pandas>=2.2
 seaborn>=0.13
-scikit-image>=0.25

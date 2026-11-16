@@ -343,3 +343,89 @@ def plot_class_comparisons(rows: list[dict], path: Path) -> None:
         ha="center", fontsize=9,
     )
     _save_eda(figure, path)
+
+
+def plot_feature_benchmark(benchmarks: list[dict], decisions: list[dict], path: Path) -> None:
+    """Show measured training-only costs and explicitly projected cache size."""
+    plt = _pyplot()
+    figure, axes = plt.subplots(1, 2, figsize=(10, 4.4))
+    names = [row["method"] for row in benchmarks]
+    axes[0].bar(names, [row["feature_seconds"] for row in benchmarks], label="Descriptor extraction")
+    axes[0].bar(names, [row["decode_normalize_seconds"] for row in benchmarks],
+                bottom=[row["feature_seconds"] for row in benchmarks], label="Decode + normalize")
+    axes[0].set(title="50 training images: measured times", ylabel="Seconds")
+    axes[0].legend(fontsize=8)
+    bars = axes[1].bar(names, [row["projected_payload_bytes"] / 1024**2 for row in decisions])
+    axes[1].bar_label(bars, fmt="%.2f", padding=3)
+    axes[1].set(title="1,300 images: projected float32 payload", ylabel="MiB (headers excluded)")
+    axes[1].set_ylim(0, max(row["projected_payload_bytes"] / 1024**2 for row in decisions) * 1.18)
+    figure.suptitle("CPU feature extraction: resource comparison, not model performance")
+    _save_eda(figure, path)
+
+
+def plot_texture_features(samples: list[dict], directory: Path) -> list[dict]:
+    """Compare native HOG renderings and GLCM probabilities/properties in training."""
+    from src.feature_extraction import GLCM_PROPERTIES, glcm_matrix
+
+    _training_only(samples)
+    if any(sample["image"].shape != (512, 512) for sample in samples):
+        raise ValueError("Texture figures require native 512 x 512 arrays.")
+    plt = _pyplot()
+    ordered = sorted(samples, key=lambda r: CLASS_ORDER.index(r["class_name"]))
+    figure, axes = plt.subplots(len(ordered), 3, figsize=(9, 4.3 * len(ordered)), squeeze=False)
+    for row_index, sample in enumerate(ordered):
+        image = sample["image"]
+        renderings = [extract_hog(image, FeatureConfig(pixels_per_cell=(cell, cell)), visualize=True)[1]
+                      for cell in (8, 16)]
+        common_max = max(float(np.percentile(values, 99)) for values in renderings) or 1.0
+        for column, values in enumerate([image, *renderings]):
+            axes[row_index, column].imshow(values, cmap="gray", vmin=0,
+                                          vmax=1 if column == 0 else common_max,
+                                          interpolation="nearest")
+            title = "Normalized 512 x 512" if column == 0 else f"HOG: {8 if column == 1 else 16} x {8 if column == 1 else 16} px/cell"
+            axes[row_index, column].set_title(f"{CLASS_TITLES[sample['class_name']]}: {title}")
+            axes[row_index, column].axis("off")
+    figure.suptitle("Training-only HOG renderings at native image resolution")
+    figure.text(0.5, 0.012, "HOG renderings share a per-row display range; these images are not the flattened descriptors.",
+                ha="center", fontsize=9)
+    _save_eda(figure, directory / "feature_hog_comparison.png")
+
+    matrices = [glcm_matrix(sample["image"]) for sample in ordered]
+    maximum = max(float(values[:, :, 0, :].max()) for values in matrices)
+    figure, axes = plt.subplots(len(ordered), 4, figsize=(10.5, 3.3 * len(ordered)), squeeze=False)
+    for row_index, (sample, matrix) in enumerate(zip(ordered, matrices)):
+        for angle_index, degrees in enumerate((0, 45, 90, 135)):
+            axis = axes[row_index, angle_index]
+            axis.imshow(matrix[:, :, 0, angle_index], cmap="viridis", vmin=0, vmax=maximum,
+                        origin="lower", interpolation="nearest")
+            axis.set(title=f"{CLASS_TITLES[sample['class_name']]}: {degrees} degrees",
+                     xlabel="Neighbor gray level", ylabel="Reference gray level")
+    figure.suptitle("GLCM probabilities: 32 gray levels, distance 1 pixel")
+    figure.text(0.5, 0.012, f"Shared probability color range: 0 to {maximum:.4f}; each symmetric matrix sums to one.",
+                ha="center", fontsize=9)
+    _save_eda(figure, directory / "feature_glcm_matrices.png")
+
+    properties = [glcm_properties(sample["image"]) for sample in ordered]
+    figure, axes = plt.subplots(2, 3, figsize=(11, 7))
+    records = []
+    for axis, name in zip(axes.flat, GLCM_PROPERTIES):
+        for sample, values in zip(ordered, properties):
+            for distance_index, distance in enumerate((1, 2)):
+                axis.plot([0, 45, 90, 135], values[name][distance_index],
+                          color=CLASS_COLORS[sample["class_name"]],
+                          linestyle="-" if distance == 1 else "--", marker="o", markersize=3,
+                          label=f"{CLASS_TITLES[sample['class_name']]}: d={distance}")
+                for angle_index, degrees in enumerate((0, 45, 90, 135)):
+                    records.append({"image_path": sample["image_path"], "class_name": sample["class_name"],
+                                    "split": "train", "property": name, "distance": distance,
+                                    "angle_degrees": degrees, "value": float(values[name][distance_index, angle_index])})
+        axis.set(title=name.upper() if name == "ASM" else name.capitalize(),
+                 xlabel="Angle (degrees)", ylabel="Property value", xticks=[0, 45, 90, 135])
+    handles, labels = axes.flat[0].get_legend_handles_labels()
+    figure.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 0.945),
+                  ncol=4, fontsize=8, frameon=False)
+    figure.suptitle("GLCM properties for one reviewed training image per class")
+    figure.text(0.5, 0.012, "Illustrative samples only; curves do not establish class separation or classification performance.",
+                ha="center", fontsize=9)
+    _save_eda(figure, directory / "feature_glcm_properties.png")
+    return records
