@@ -1,0 +1,68 @@
+{
+  "constant_original_images": 0,
+  "constant_resized_images": 0,
+  "figure_paths": [
+    "results/figures/eda_class_distribution.png",
+    "results/figures/eda_training_samples.png",
+    "results/figures/eda_training_intensity_histograms.png",
+    "results/figures/eda_training_image_statistics.png",
+    "results/figures/eda_preprocessing_comparison.png",
+    "results/figures/eda_preprocessing_histograms.png",
+    "results/figures/eda_training_class_comparisons.png"
+  ],
+  "histogram_bins": 256,
+  "interpolation": "None; native dimensions preserved",
+  "manifest_sha256": {
+    "test.csv": "740f2e053dc69ee89351097e5b2a7abaf6b4fa09272637d02185caa5d0afa8bf",
+    "train.csv": "8775c7592975e2d0b20fa15101d9d93bb68f7061c986a5eace812f5edc5f34c4"
+  },
+  "manifests_unchanged": true,
+  "native_height": 512,
+  "native_width": 512,
+  "normalization": "Per-image Min-Max; native dimensions preserved unless an explicit different size is requested; constants map to zero",
+  "output_dtype": "float32",
+  "output_range": [
+    0.0,
+    1.0
+  ],
+  "preprocessing_parameters_fitted_across_images": false,
+  "preprocessing_validation_passed": true,
+  "primary_images": 1300,
+  "processed_images": 1300,
+  "processing_height": 512,
+  "processing_width": 512,
+  "python_version": "3.14.7",
+  "raw_images_unchanged": true,
+  "resize_height": 512,
+  "resize_width": 512,
+  "resizing_applied": false,
+  "samples_per_class": 3,
+  "seed": 42,
+  "selected_training_images": [
+    "data/raw/casting_512x512/ok_front/cast_ok_0_1755.jpeg",
+    "data/raw/casting_512x512/ok_front/cast_ok_0_6880.jpeg",
+    "data/raw/casting_512x512/ok_front/cast_ok_0_7815.jpeg",
+    "data/raw/casting_512x512/def_front/cast_def_0_1721.jpeg",
+    "data/raw/casting_512x512/def_front/cast_def_0_7396.jpeg",
+    "data/raw/casting_512x512/def_front/cast_def_0_8668.jpeg"
+  ],
+  "source_inventory_sha256": "d3ecba68cd0c1f166268d17d3558b680e8cde6b6e69aaa9d7508d8a2970e6fdd",
+  "stage": 2,
+  "test_images": 260,
+  "test_images_described": 260,
+  "test_pixel_statistics_used_in_comparisons_or_figures": false,
+  "train_images": 1040,
+  "training_images_analyzed": 1040,
+  "versions": {
+    "matplotlib": "3.11.2",
+    "numpy": "2.5.4",
+    "opencv-python": "5.0.0.93"
+  },
+  "warnings": [
+    "Class comparisons are descriptive and use image-level observations, not independent pixels.",
+    "Unknown physical-part relationships and Stage 1 provisional-split limitations remain.",
+    "Default processing preserves native 512 x 512 dimensions; a different processing size must be requested explicitly.",
+    "Test descriptors, if requested, must not inform feature or model selection.",
+    "No HOG, GLCM, model training, or hyperparameter optimization was run."
+  ]
+}

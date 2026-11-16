@@ -1,0 +1,12 @@
+# Verified Stage 2 environment: Windows, Python 3.14.7.
+-r requirements-stage1.txt
+matplotlib==3.11.2
+
+# Pinned plotting dependencies; existing NumPy and Pillow pins are reused.
+contourpy==1.4.0
+cycler==0.12.1
+fonttools==4.68.0
+kiwisolver==1.5.1
+pyparsing==3.3.3
+python-dateutil==4.0.0
+tzdata==2026.6

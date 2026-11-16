@@ -1,0 +1,7 @@
+image_path,image_id,class_name,label,split,sample_rank,seed
+data/raw/casting_512x512/ok_front/cast_ok_0_1755.jpeg,a526bc583a9c007c027b99afbd5bd4c3a74de59c13a6f9eabd03260423212886,ok_front,0,train,1,42
+data/raw/casting_512x512/ok_front/cast_ok_0_6880.jpeg,77117acbc5b1f80e0df3328e77fa1df4eeff0dae381e8fef39635bd98cab4032,ok_front,0,train,2,42
+data/raw/casting_512x512/ok_front/cast_ok_0_7815.jpeg,a11c2386a7e40aaae03e6e0f516a1f5eaa0b078a8a71c3d4313f0fc0d4eefb98,ok_front,0,train,3,42
+data/raw/casting_512x512/def_front/cast_def_0_1721.jpeg,ac6dd149778ac994d8fae9085fa663c54f371794044a44a3abbed33d978d592c,def_front,1,train,1,42
+data/raw/casting_512x512/def_front/cast_def_0_7396.jpeg,5a6c41845dea4233cf5ef728566e51a1b0b3d3398ca840c79814634934ee5145,def_front,1,train,2,42
+data/raw/casting_512x512/def_front/cast_def_0_8668.jpeg,6c4ddfd9f9dc043f696478d0e74c2c6d52cc301ca452f4b02cbcaf8e1f4b5f29,def_front,1,train,3,42

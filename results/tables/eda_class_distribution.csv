@@ -1,0 +1,7 @@
+split,class_name,label,image_count,subset_total,percentage
+all,ok_front,0,519,1300,39.92307692307692
+all,def_front,1,781,1300,60.07692307692308
+train,ok_front,0,415,1040,39.90384615384615
+train,def_front,1,625,1040,60.09615384615385
+test,ok_front,0,104,260,40.0
+test,def_front,1,156,260,60.0
