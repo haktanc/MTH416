@@ -17,6 +17,7 @@ def evaluate_predictions(
     """Accept positive-class probabilities or decision function scores."""
     from sklearn.metrics import (
         accuracy_score,
+        balanced_accuracy_score,
         confusion_matrix,
         f1_score,
         precision_score,
@@ -32,6 +33,7 @@ def evaluate_predictions(
         raise ValueError("Labels must be 0 (acceptable) or 1 (defective).")
     metrics = {
         "accuracy": accuracy_score(truth, predictions),
+        "balanced_accuracy": balanced_accuracy_score(truth, predictions),
         "precision": precision_score(truth, predictions, zero_division=0),
         "recall": recall_score(truth, predictions, zero_division=0),
         "f1": f1_score(truth, predictions, zero_division=0),

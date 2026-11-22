@@ -3,17 +3,18 @@
 ## Surface Defect Detection in Casting Pump Impeller Images Using Texture Analysis and Machine Learning
 
 This academic project investigates surface defect detection using classical
-image processing, texture descriptors, and machine learning. Implemented texture
-methods include HOG and GLCM; classifiers planned for Stage 4 are Support Vector
-Machines and Random Forests. Deep learning
-and GPU acceleration are not required. Execution is local and CPU based.
+image processing, texture descriptors, and machine learning. The project
+extracts HOG and GLCM descriptors and compares Support Vector Machine and
+Random Forest baselines. Execution is local and CPU based.
 
 Stages 1-3 provide dataset preparation, exploratory data analysis (EDA),
 stateless grayscale preprocessing, and native-resolution feature extraction.
 The saved manifests remain
 **provisional**, because source and physical-part independence cannot be
 established from the available data. HOG/GLCM resource benchmarks and feature
-caches are available; classifier training and model selection have not run.
+caches are available. Stage 4A measures fixed classifier baselines using
+training-set cross-validation. Hyperparameter optimization and final holdout
+evaluation are reserved for later stages.
 
 ## Dataset selection
 
@@ -114,7 +115,10 @@ Jupyter dependencies, Colab services, or cloud storage are used.
 | `preprocessing.py` | Validated grayscale arrays, configurable resizing, and safe per-image Min-Max normalization with float32 outputs. |
 | `feature_extraction.py` | Configurable HOG, GLCM, and combined feature vectors. |
 | `feature_pipeline.py` | Training-only benchmarks, resource gates, streaming split-specific caches, provenance and read-only loading. |
-| `model_training.py` | CPU classifiers, training-only cross-validation, hyperparameter search, and serialization. |
+| `model_training.py` | CPU classifier construction, fixed Stage 4A pipelines, and separate tuning and serialization helpers. |
+| `baseline_experiment.py` | Stage 4A cache alignment, saved-fold evaluation, resource checks, and result serialization. |
+| `baseline_scaling.py` | StandardScaler with bounded fit-statistics batches. |
+| `baseline_figures.py` | Training CV comparisons with across-fold variability. |
 | `evaluation.py` | Accuracy, precision, recall, F1, confusion matrices, ROC-AUC, and comparison tables. |
 | `visualization.py` | Publication-quality EDA/preprocessing PNGs and preserved helpers for later texture/model plots. |
 | `main.py` | Lightweight initialization and primary dataset accessibility check. |
@@ -132,7 +136,7 @@ agreement, split membership, unique entries, identities, and deterministic order
 
 ## Local Python environment
 
-The Stage 1-3 environment uses Python 3.14.7 on Windows.
+The Stage 1-4A environment uses Python 3.14.7 on Windows.
 Use the existing `.venv/`. Only if it is absent, create it from an installed
 Python interpreter:
 
@@ -700,8 +704,8 @@ $env:MKL_NUM_THREADS = '1'
 # Reuse matching benchmark metadata, then cache feasible configurations.
 .\.venv\Scripts\python.exe -B -m src.feature_pipeline --reuse-benchmark
 
-# All Stage 1-3 correctness tests; no classifier training.
-.\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider
+# Feature and cache correctness tests.
+.\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider tests/test_feature_extraction.py tests/test_feature_pipeline.py
 ```
 
 Without flags, the workflow benchmarks and then extracts feasible configurations.
@@ -785,6 +789,130 @@ The final Stage 1-3 suite passed **151 tests in 30.26 seconds**, including a
 regression check for nonoverlapping HOG panel titles and explicit cell-size
 units. No model was fitted and no best feature configuration was selected.
 
+## Stage 4A: Fixed SVM and Random Forest baselines
+
+The experiment reads the Stage 3 training feature caches at native 512 × 512
+preprocessing resolution. It compares HOG 8 × 8, HOG 16 × 16, GLCM,
+HOG 8 × 8 + GLCM, and HOG 16 × 16 + GLCM with both classifiers. Combined designs append
+GLCM columns after HOG columns, using an explicit join on saved image IDs.
+Cache integrity checks verify provenance, labels and manifest row order.
+
+The accepted 1,040 training images consist of 625 defective and 415 OK images.
+The saved five-fold assignments give 832 fit and 208 validation images per
+fold. Each training image is validated once for every complete combination.
+The held-out 260 images are reserved for final evaluation. The Stage 3 loader
+checks the test manifest fingerprint along with the other saved inputs.
+
+| Classifier | Fixed baseline settings |
+| --- | --- |
+| RBF SVM | `SVC(kernel="rbf", C=1.0, gamma="scale", class_weight=None, random_state=42)` with a `StandardScaler` inside the pipeline. |
+| Random Forest | `RandomForestClassifier(n_estimators=100, max_depth=None, min_samples_split=2, min_samples_leaf=1, class_weight=None, random_state=42, n_jobs=1)` on the unscaled descriptors. |
+
+These settings are specified before evaluation. To bound dense temporary
+allocations, the SVM scaler accumulates StandardScaler statistics in batches
+of 16 rows from the current fit fold. It then standardizes the fit and
+validation designs with those statistics. A fresh pipeline is fitted per fold.
+The experiment builds only the current phase's dense matrix from read-only
+memory maps. SVM uses float64, which is the format used by the dense libsvm
+backend. Random Forest uses float32. Fold workers run one at a time, with
+numerical thread pools limited to one.
+
+Before each combination, a resource smoke test fits 96 images and predicts 32
+images sampled from the respective fit and validation portions of saved fold 1
+with seed 42. Full folds have a preflight memory estimate and a 384 MiB physical
+memory reserve. The runner stops an affected configuration if the estimate
+cannot fit or available RAM falls below the reserve on two consecutive samples.
+Peak RSS is the OS working-set high-water mark of the worker and includes
+mapped pages and imports. CPU and available memory can vary across runs.
+The initial Random Forest estimate counted the dense fit matrix and 256 MiB of
+overhead. Its observed peak on HOG 8 × 8 exceeded that estimate. The reproduction
+command now budgets for resident source cache pages alongside the fit matrix.
+The CSV preserves the estimates used for the measured run.
+
+Defective is label 1. The experiment reports accuracy, balanced accuracy,
+defective precision, recall, F1 and ROC-AUC. AUC uses SVM decision scores or
+Random Forest defective probabilities. False negatives count defective images
+predicted as OK. Reports show unweighted mean and sample standard deviation
+across the five folds. The total false negatives sum out-of-fold counts over
+the 625 defective images. Fit time includes SVM scaler fitting and fit-data
+standardization. SVM prediction time includes fold-local validation
+transformation and batched evaluation of the fitted RBF decision function,
+which yields both label predictions and AUC scores. The calculation uses the
+fitted support vectors, dual coefficients, resolved gamma and intercept.
+Near-zero margins use scikit-learn's prediction directly. The first, middle
+and last validation row of every fold are checked against SVC's decision scores
+and predicted labels. Random Forest uses `predict` for labels and times
+`predict_proba` separately. Data loading and SVC parity checks have separate
+timing columns.
+
+Reproduce from the repository root with the Stage 3 environment and local
+training caches:
+
+```powershell
+.\.venv\Scripts\python.exe -B -m src.baseline_experiment
+.\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider
+```
+
+The runner writes smoke timings, individual folds, and aggregate results to
+`baseline_cv_smoke.csv`, `baseline_cv_folds.csv`, and
+`baseline_cv_summary.csv` in `results/tables/`. The accompanying
+`baseline_cv_run.json` records the fixed settings, versions, and input hashes.
+Five `baseline_cv_*.png` figures in `results/figures/` show F1, recall,
+accuracy and balanced accuracy, fit time, and the HOG cell-size comparison.
+Their error bars show variability between saved folds, not confidence intervals.
+
+### Measured baseline results
+
+All ten combinations completed their five saved folds. The table reports the
+mean ± sample SD across folds. FN totals count missed defective images out of
+625 out-of-fold defective examples. Full precision is available in the
+[summary CSV](results/tables/baseline_cv_summary.csv).
+
+| Features | Classifier | Accuracy | Balanced accuracy | Precision | Recall | F1 | ROC-AUC | FN | Fit (s) | Predict (s) |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| HOG 8×8 | SVM | 0.749 ± 0.037 | 0.726 ± 0.040 | 0.767 ± 0.032 | 0.838 ± 0.043 | 0.800 ± 0.030 | 0.868 ± 0.024 | 101 | 37.763 ± 3.621 | 2.805 ± 0.174 |
+| HOG 8×8 | Random Forest | 0.716 ± 0.040 | 0.687 ± 0.042 | 0.733 ± 0.031 | 0.830 ± 0.039 | 0.779 ± 0.032 | 0.789 ± 0.031 | 106 | 21.990 ± 0.224 | 0.037 ± 0.003 |
+| HOG 16×16 | SVM | 0.857 ± 0.040 | 0.846 ± 0.045 | 0.870 ± 0.043 | 0.898 ± 0.036 | 0.883 ± 0.032 | 0.943 ± 0.018 | 64 | 7.987 ± 0.262 | 0.610 ± 0.023 |
+| HOG 16×16 | Random Forest | 0.771 ± 0.040 | 0.750 ± 0.042 | 0.784 ± 0.033 | 0.856 ± 0.041 | 0.818 ± 0.032 | 0.880 ± 0.020 | 90 | 10.242 ± 0.162 | 0.020 ± 0.003 |
+| GLCM | SVM | 0.785 ± 0.022 | 0.775 ± 0.028 | 0.821 ± 0.036 | 0.822 ± 0.031 | 0.821 ± 0.017 | 0.871 ± 0.022 | 111 | 0.049 ± 0.004 | 0.003 ± 0.000 |
+| GLCM | Random Forest | 0.898 ± 0.015 | 0.895 ± 0.018 | 0.920 ± 0.023 | 0.910 ± 0.021 | 0.915 ± 0.012 | 0.964 ± 0.010 | 56 | 0.427 ± 0.029 | 0.011 ± 0.001 |
+| HOG 8×8 + GLCM | SVM | 0.752 ± 0.039 | 0.729 ± 0.042 | 0.769 ± 0.034 | 0.842 ± 0.041 | 0.803 ± 0.031 | 0.869 ± 0.024 | 99 | 34.320 ± 0.291 | 2.535 ± 0.037 |
+| HOG 8×8 + GLCM | Random Forest | 0.735 ± 0.038 | 0.705 ± 0.040 | 0.744 ± 0.030 | 0.851 ± 0.039 | 0.794 ± 0.031 | 0.811 ± 0.027 | 93 | 21.937 ± 1.568 | 0.038 ± 0.006 |
+| HOG 16×16 + GLCM | SVM | 0.861 ± 0.038 | 0.852 ± 0.042 | 0.876 ± 0.040 | 0.896 ± 0.035 | 0.885 ± 0.031 | 0.944 ± 0.018 | 65 | 7.603 ± 0.071 | 0.597 ± 0.016 |
+| HOG 16×16 + GLCM | Random Forest | 0.801 ± 0.037 | 0.780 ± 0.042 | 0.806 ± 0.038 | 0.883 ± 0.034 | 0.842 ± 0.029 | 0.899 ± 0.017 | 73 | 11.002 ± 0.410 | 0.021 ± 0.002 |
+
+**GLCM + Random Forest** had the highest mean F1 (0.9148), defective recall
+(0.9104), balanced accuracy (0.8950), and ROC-AUC (0.9645). It missed 56 of the
+625 defective images and averaged 0.427 seconds to fit. The RBF SVM had a
+higher mean F1 than Random Forest on all four feature sets containing HOG.
+Moving from 8×8 to 16×16 cells improved mean F1 and recall for both classifiers,
+with or without GLCM. For HOG alone, the change reduced mean fit time from
+37.76 to 7.99 seconds for SVM and from 21.99 to 10.24 seconds for Random Forest.
+
+For Stage 4B, prioritize GLCM + Random Forest and retain the two HOG 16×16 SVM
+variants. Adding GLCM to HOG 16×16 increased SVM mean F1 from 0.8829 to 0.8855
+while increasing false negatives from 64 to 65. That small F1 gain should be
+weighed alongside the fold variability and recall. Physical-part independence
+remains unverified, so these training-CV comparisons cannot establish
+performance on independently acquired parts. Hyperparameter search and final
+holdout evaluation remain separate stages.
+
+The final CPU run took **1,076.36 seconds (17 min 56 s)** including smoke
+checks, input verification, worker startup and figure export. The sum of the
+50 measured fit times was **766.60 seconds**. This run follows a separate
+pilot, which timed standard SVC label and score calls individually. The final
+run uses the batched decision calculation described above. Peak worker RSS was
+**1,945.29 MiB**, and sampled available RAM stayed at or above **1,912.02 MiB**
+across full folds. The smoke workers peaked between **127.32 and 339.90 MiB**.
+No configuration triggered a resource stop.
+
+The configured Stage 1–4A test suite passed **160 tests in 36.45 seconds**.
+The added tests cover ID-based alignment, exclusion of holdout cache paths,
+exact saved-fold membership, fold-local scaling, SVC score and label parity,
+fixed classifier parameters, metric arithmetic, and CSV/JSON serialization.
+All 1,300 raw-image hashes, both manifest hashes, and the saved CV checksum
+matched the recorded Stage 1 and Stage 3 fingerprints.
+
 ## Git and dataset management
 
 The existing GitHub repository is
@@ -821,9 +949,8 @@ assignments unchanged. Unknown physical-part relationships remain a limitation
 to disclose; only substantiated new evidence would justify a separately
 reviewed protocol change, without consulting model/test performance.
 
-1. Compare both cached HOG configurations and GLCM during Stage 4 using only
-   training CV performance; do not select them using test descriptors.
-2. Fit and tune CPU-based SVM and Random Forest models using training data only
+1. Shortlist configurations using Stage 4A baseline cross-validation results.
+2. Tune CPU-based SVM and Random Forest models in Stage 4B using training data only
    and the existing saved CV assignments.
 3. Evaluate on held-out data and save actual metrics and comparison tables.
 4. Extend the Stage 2 scientific figures with genuine model results and conclusions.

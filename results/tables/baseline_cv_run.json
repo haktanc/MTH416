@@ -1,0 +1,145 @@
+{
+  "backend": "CPU",
+  "completed_combinations": 10,
+  "elapsed_seconds": 1076.361291000001,
+  "feature_sets": {
+    "glcm": [
+      "glcm"
+    ],
+    "hog16": [
+      "hog16"
+    ],
+    "hog16_glcm": [
+      "hog16",
+      "glcm"
+    ],
+    "hog8": [
+      "hog8"
+    ],
+    "hog8_glcm": [
+      "hog8",
+      "glcm"
+    ]
+  },
+  "figures": [
+    "results/figures/baseline_cv_f1.png",
+    "results/figures/baseline_cv_recall.png",
+    "results/figures/baseline_cv_accuracy.png",
+    "results/figures/baseline_cv_training_time.png",
+    "results/figures/baseline_cv_hog_comparison.png"
+  ],
+  "fold_rows": 50,
+  "folds": [
+    {
+      "fit_rows": 832,
+      "fold": 1,
+      "validation_rows": 208
+    },
+    {
+      "fit_rows": 832,
+      "fold": 2,
+      "validation_rows": 208
+    },
+    {
+      "fit_rows": 832,
+      "fold": 3,
+      "validation_rows": 208
+    },
+    {
+      "fit_rows": 832,
+      "fold": 4,
+      "validation_rows": 208
+    },
+    {
+      "fit_rows": 832,
+      "fold": 5,
+      "validation_rows": 208
+    }
+  ],
+  "initial_resources": {
+    "available_ram_bytes": 4056825856,
+    "cpu": "AMD64 Family 26 Model 36 Stepping 0, AuthenticAMD",
+    "disk_free_bytes": 367826591744,
+    "logical_cpus": 20,
+    "platform": "Windows-11-10.0.26300-SP0",
+    "total_ram_bytes": 16417599488
+  },
+  "models": {
+    "random_forest": {
+      "class_weight": null,
+      "max_depth": null,
+      "min_samples_leaf": 1,
+      "min_samples_split": 2,
+      "n_estimators": 100,
+      "n_jobs": 1,
+      "random_state": 42
+    },
+    "svm": {
+      "C": 1.0,
+      "class_weight": null,
+      "gamma": "scale",
+      "kernel": "rbf",
+      "prediction": "Batched fitted RBF decision function for labels and AUC scores",
+      "random_state": 42,
+      "reference_check_rows_per_fold": 3,
+      "scaler": "StandardScaler partial_fit batches of 16 within each fit fold"
+    }
+  },
+  "positive_label": 1,
+  "provenance": {
+    "cv_folds_sha256": "9b96102e5e022af37a16c4a1b3103d7e972848a2de3772766531882e160d4364",
+    "source_inventory_sha256": "d3ecba68cd0c1f166268d17d3558b680e8cde6b6e69aaa9d7508d8a2970e6fdd",
+    "stage3_summary_sha256": "51e001a452e8bddc9a6b667a2b9e463e25f5c6413a612a557871c535f7939db0",
+    "train_index_sha256": "979d7559c5c50b820a88ce47e32f19bcce4d112b50f9f043073d9c4cd1c10f59",
+    "train_manifest_sha256": "8775c7592975e2d0b20fa15101d9d93bb68f7061c986a5eace812f5edc5f34c4",
+    "training_caches": {
+      "glcm": {
+        "dtype": "float32",
+        "path": "results/cache/features/train_glcm.npy",
+        "sha256": "266f8a38f65a2073496be0700e0e33629fcf693ef581b18ca0e1a3fe191b487a",
+        "shape": [
+          1040,
+          48
+        ]
+      },
+      "hog16": {
+        "dtype": "float32",
+        "path": "results/cache/features/train_hog16.npy",
+        "sha256": "e3164f5961bd5534e89e67bc3f46ce0dda0babb6c7d00a32135e92bad44f5f0e",
+        "shape": [
+          1040,
+          34596
+        ]
+      },
+      "hog8": {
+        "dtype": "float32",
+        "path": "results/cache/features/train_hog8.npy",
+        "sha256": "0632279153f9695b0998b952f4cba6d83a50deb62a100ff58d8a90097f7c6ce7",
+        "shape": [
+          1040,
+          142884
+        ]
+      }
+    }
+  },
+  "python": "3.14.7",
+  "resource_guard": {
+    "numerical_threads": 1,
+    "parallel_fits": 1,
+    "reserve_mib": 384,
+    "smoke_fit_rows": 96,
+    "smoke_validation_rows": 32
+  },
+  "sample_sd_ddof": 1,
+  "scope": "training-only cross-validation",
+  "seed": 42,
+  "skipped_combinations": [],
+  "stage": "4A",
+  "training_rows": 1040,
+  "versions": {
+    "matplotlib": "3.11.2",
+    "numpy": "2.5.4",
+    "scikit-learn": "1.9.1",
+    "threadpoolctl": "3.8.0"
+  }
+}

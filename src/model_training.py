@@ -10,6 +10,29 @@ if TYPE_CHECKING:
     from sklearn.pipeline import Pipeline
 
 
+def build_baseline_classifier(model_name: str, random_state: int = 42) -> Pipeline:
+    """Build the fixed Stage 4A estimators, independently of tuning defaults."""
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.pipeline import Pipeline
+    from sklearn.svm import SVC
+
+    if model_name == "svm":
+        from src.baseline_scaling import BatchedStandardScaler
+
+        return Pipeline([
+            ("scaler", BatchedStandardScaler(copy=False)),
+            ("classifier", SVC(kernel="rbf", C=1.0, gamma="scale",
+                               class_weight=None, random_state=random_state)),
+        ])
+    if model_name == "random_forest":
+        return Pipeline([("classifier", RandomForestClassifier(
+            n_estimators=100, max_depth=None, min_samples_split=2,
+            min_samples_leaf=1, class_weight=None, random_state=random_state,
+            n_jobs=1,
+        ))])
+    raise ValueError("Model must be 'svm' or 'random_forest'.")
+
+
 def build_classifier(model_name: str, random_state: int = 42) -> Pipeline:
     """Keep SVM scaling in the pipeline to avoid cross-validation leakage."""
     from sklearn.ensemble import RandomForestClassifier
