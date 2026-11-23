@@ -13,8 +13,8 @@ The saved manifests remain
 **provisional**, because source and physical-part independence cannot be
 established from the available data. HOG/GLCM resource benchmarks and feature
 caches are available. Stage 4A measures fixed classifier baselines using
-training-set cross-validation. Hyperparameter optimization and final holdout
-evaluation are reserved for later stages.
+training-set cross-validation. Stage 4B tunes shortlisted pairs on the same
+folds. Final holdout evaluation is reserved for Stage 5.
 
 ## Dataset selection
 
@@ -913,6 +913,131 @@ fixed classifier parameters, metric arithmetic, and CSV/JSON serialization.
 All 1,300 raw-image hashes, both manifest hashes, and the saved CV checksum
 matched the recorded Stage 1 and Stage 3 fingerprints.
 
+## Stage 4B: Compact hyperparameter search
+
+Stage 4B compares SVM and Random Forest with HOG 16×16, GLCM, and HOG 16×16 +
+GLCM. The ten [Stage 4A baseline results](results/tables/baseline_cv_summary.csv)
+remain available. The 16×16 HOG representation uses 34,596 features instead of
+142,884 for HOG 8×8, and it performed better in the fixed baseline comparison.
+The search excludes 8×8 HOG to limit cost. Its baseline results do not establish
+which scale would perform better under every configuration.
+
+The workflow opens the training manifest, training feature indexes and labels,
+HOG 16×16 and GLCM training caches, and saved CV assignments. It verifies their
+hashes against Stage 4A or Stage 3 and checks image IDs, labels, shapes, and fold
+membership. Combined arrays put the 48 GLCM columns after 34,596 HOG columns.
+Each fold fits on 832 and validates on 208 of the saved training images. The
+holdout manifest, feature files and images are outside this workflow.
+
+The fixed, predeclared plan contains 38 candidates, including the six matching
+Stage 4A baselines. The baseline fold records are reused directly. Each new
+candidate uses the same five folds and seed 42 where applicable.
+
+| Estimator | Candidate settings |
+| --- | --- |
+| RBF SVM | `(C, gamma)`: `(1, scale)`, `(0.3, scale)`, `(3, scale)`, `(1, 0.25/d)`, `(1, 4/d)`, `(3, 0.25/d)`, where `d` is the feature count. |
+| Combined RBF SVM only | Two additional `gamma=scale` candidates with `C=1` and `C=3`, both with fixed GLCM weight `sqrt(34596 / 48)` after scaling. |
+| Random Forest | `(trees, depth, min leaf, max features)`: `(100, None, 1, sqrt)`, `(60, None, 1, sqrt)`, `(140, None, 1, sqrt)`, `(80, 12, 1, sqrt)`, `(80, None, 3, sqrt)`, `(100, None, 1, log2)`. |
+
+The SVM trials vary regularization and kernel width near the baseline. The
+Random Forest trials vary ensemble size, tree regularization, and the number
+of candidate split features using a compact list rather than the Cartesian
+product. Other fixed parameters come from Stage 4A. Random Forest receives
+unscaled descriptors. Multiplying a feature by a positive constant preserves
+its ordering for tree splits, so group weighting is tested in SVM only.
+
+SVM standardization is fitted inside the pipeline on each fit fold. In the
+weighted variants, the last 48 standardized coordinates are multiplied by
+about 26.85. With unit variance per nonconstant coordinate, the squared weight
+brings the nominal aggregate variance of the small group to the HOG group's
+scale. The factor is fixed from dimensions and independent of image values,
+labels and validation data. The two trials have directly matched unweighted
+settings. Library `gamma=scale` is calculated from the resulting fit matrix.
+
+Candidates are ranked by mean Defective F1, then by fewer out-of-fold false
+negatives, then by candidate ID. Reported standard deviations use the five
+folds with `ddof=1`. The same folds are used to tune and compare candidates, so
+the selected scores can be optimistic and cannot estimate independent
+generalization. The labels support binary OK/Defective classification at
+image level. Physical-part independence is still unverified.
+
+Reproduce or resume using the Stage 4A environment:
+
+```powershell
+.\.venv\Scripts\python.exe -B -m src.tuning_experiment
+.\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider
+```
+
+The runner uses one CPU worker at a time. An initial training-only resource
+smoke test measures each classifier, and full candidates use the existing
+preflight estimates and available-memory guard. Each finished fold is saved
+atomically in an ignored checkpoint directory keyed by the plan, inputs and
+implementation. Repeating the command resumes matching checkpoints.
+
+Outputs in `results/tables/` include `tuning_cv_folds.csv`,
+`tuning_cv_candidates.csv`, `tuning_cv_selected.csv`,
+`tuning_cv_selected_oof.csv`, `tuning_cv_failures.json`, and
+`tuning_cv_run.json`. Stage 4A baselines retain their fold-level out-of-fold
+confusion counts. Stage 4B stores per-image out-of-fold predictions for selected
+new configurations and keeps all candidate predictions in the local
+checkpoints. Individual predictions for reused baselines were not recorded in
+Stage 4A. The six `tuning_cv_*.png` figures compare baselines, classifiers,
+feature sets, resource costs and selected settings.
+
+### Measured training-CV results
+
+The search completed all **38 candidates**. This produced 160 new fits and
+reused 30 baseline fold records. No candidates failed. Arrows compare the
+Stage 4A baseline with the selected configuration. Plus/minus values are
+selected sample SDs across the five folds. False negatives (FN) and false
+positives (FP) are totals over 625 defective and 415 OK training images.
+Every selected forest uses `max_depth=None`, `min_samples_leaf=1`, and
+`max_features="sqrt"`.
+
+| Features | Classifier | Selected settings | Defective F1 | Defective recall | FN | FP | Fit s/fold |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
+| HOG 16×16 | SVM | `C=3, gamma=scale` | 0.8829 → 0.9228 ± 0.0166 | 0.8976 → 0.9168 ± 0.0209 | 64 → 52 | 85 → 44 | 8.142 |
+| HOG 16×16 | Random Forest | 60 trees | 0.8180 → 0.8241 ± 0.0264 | 0.8560 → 0.8576 ± 0.0317 | 90 → 89 | 148 → 140 | 6.814 |
+| GLCM | SVM | `C=1, gamma=4/48` | 0.8212 → 0.8838 ± 0.0053 | 0.8224 → 0.8640 ± 0.0179 | 111 → 85 | 113 → 57 | 0.060 |
+| GLCM | Random Forest | 60 trees | 0.9148 → 0.9191 ± 0.0113 | 0.9104 → 0.9088 ± 0.0175 | 56 → 57 | 50 → 43 | 0.321 |
+| HOG 16×16 + GLCM | SVM | `C=3, gamma=scale`, GLCM weight 26.8468 | 0.8855 → 0.9434 ± 0.0181 | 0.8960 → 0.9328 ± 0.0230 | 65 → 42 | 80 → 28 | 7.367 |
+| HOG 16×16 + GLCM | Random Forest | 100 trees (baseline retained) | 0.8423 → 0.8423 ± 0.0287 | 0.8832 → 0.8832 ± 0.0338 | 73 → 73 | 134 → 134 | 11.002 |
+
+SVM led Random Forest on HOG and on the combined representation. Random
+Forest led SVM on GLCM. The 48-feature GLCM forest reached 0.9191 F1 with
+0.321 seconds per fit, while the 34,644-feature combined SVM reached 0.9434 F1
+with 7.367 seconds per fit. Adding GLCM helped the selected SVM beat both
+single-feature SVMs. The best combined forest retained its baseline and
+trailed the GLCM-only forest. These results depend on the tested
+representations, search budgets and classifiers.
+
+At matching `C=3, gamma=scale`, fixed GLCM weighting increased the combined
+SVM F1 from **0.9242 to 0.9434** and reduced false negatives from **53 to 42**.
+At `C=1` the weight improved F1 from 0.8855 to 0.9019. The 60-tree GLCM
+forest improved F1 over its baseline while adding one false negative and
+reducing false positives from 50 to 43, illustrating the ranking trade-off.
+
+**Stage 5 recommendation:** freeze `hog16_glcm_svm_07` with RBF SVM, `C=3`,
+`gamma="scale"`, and post-scaling GLCM weight `sqrt(34596/48)`. It has the
+highest mean Defective F1 and highest recall among the six selected
+configurations, with 42 missed defects and 28 false alarms across the
+training folds. This recommendation prioritizes F1 and defective recall.
+The tuned GLCM forest is a lower-cost comparison with 48 features.
+
+Full wall time was **1,055.37 seconds (17 min 35 s)** including the smoke
+checks, worker startup and reporting. New fits totaled **846.57 seconds**,
+and peak worker RSS was **574.68 MiB**. All five newly selected variants
+produced **5,200 training out-of-fold predictions**. An independent check
+matched them to the saved validation IDs and reproduced confusion counts and
+ROC-AUC. Complete accuracy, balanced accuracy, precision, recall, F1, ROC-AUC,
+fit and prediction means and SDs are in the
+[selected results CSV](results/tables/tuning_cv_selected.csv).
+
+The configured suite passed **164 tests in 48.45 seconds**. Tests cover the
+training-only loader and saved-fold alignment, the fixed candidate plan,
+fold-local scaling and fixed group weighting, metric calculations, and
+checkpoint and selection round trips.
+
 ## Git and dataset management
 
 The existing GitHub repository is
@@ -949,11 +1074,8 @@ assignments unchanged. Unknown physical-part relationships remain a limitation
 to disclose; only substantiated new evidence would justify a separately
 reviewed protocol change, without consulting model/test performance.
 
-1. Shortlist configurations using Stage 4A baseline cross-validation results.
-2. Tune CPU-based SVM and Random Forest models in Stage 4B using training data only
-   and the existing saved CV assignments.
-3. Evaluate on held-out data and save actual metrics and comparison tables.
-4. Extend the Stage 2 scientific figures with genuine model results and conclusions.
+1. In Stage 5, fit the selected configuration on the full training partition.
+2. Evaluate the frozen configuration on held-out data and save final metrics.
 
 Use English throughout file names, identifiers, comments, docstrings, logging,
 charts, and documentation. Follow PEP 8 for Python development.

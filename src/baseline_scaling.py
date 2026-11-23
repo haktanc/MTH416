@@ -15,3 +15,9 @@ class BatchedStandardScaler(StandardScaler):
             weights = None if sample_weight is None else sample_weight[batch]
             self.partial_fit(X[batch], sample_weight=weights)
         return self
+
+
+def weight_glcm(X, factor):
+    """Apply a fixed multiplier to the last 48 columns after standardization."""
+    X[:, -48:] *= factor
+    return X

@@ -178,6 +178,17 @@ def evaluate_fold(root, job):
     model = job["model"]
     dtype = np.float64 if model == "svm" else np.float32
     estimator = build_baseline_classifier(model)
+    classifier = estimator.named_steps["classifier"]
+    classifier.set_params(**job.get("parameters", {}))
+    if job.get("glcm_weight", 1.0) != 1.0:
+        from sklearn.preprocessing import FunctionTransformer
+        from src.baseline_scaling import weight_glcm
+
+        if model != "svm" or len(job["components"]) != 2 or job["components"][-1]["shape"][1] != 48:
+            raise ValueError("Fixed GLCM weighting requires the combined SVM design.")
+        estimator.steps.insert(-1, ("glcm_weight", FunctionTransformer(
+            weight_glcm, kw_args={"factor": job["glcm_weight"]},
+        )))
     with threadpool_limits(limits=1):
         started = time.perf_counter()
         x_fit = fold_matrix(root, job["components"], fit, dtype)
@@ -192,7 +203,7 @@ def evaluate_fold(root, job):
         classifier = estimator.named_steps["classifier"]
         started = time.perf_counter()
         if model == "svm":
-            x_valid = estimator.named_steps["scaler"].transform(x_valid)
+            x_valid = estimator[:-1].transform(x_valid)
             prediction, scores = svm_predictions(classifier, x_valid)
         else:
             prediction = classifier.predict(x_valid)
@@ -213,7 +224,7 @@ def evaluate_fold(root, job):
             score_seconds = time.perf_counter() - started
         metrics, confusion = evaluate_predictions(labels[valid], prediction, scores)
     tn, fp, fn, tp = map(int, confusion.ravel())
-    return {
+    result = {
         **metrics, "true_negatives": tn, "false_positives": fp,
         "false_negatives": fn, "true_positives": tp,
         "fit_rows": len(fit), "validation_rows": len(valid),
@@ -223,6 +234,10 @@ def evaluate_fold(root, job):
         "load_validation_seconds": load_valid_seconds,
         "peak_rss_mib": process_memory()["peak_rss_bytes"] / MIB,
     }
+    if job.get("capture_predictions"):
+        result["predictions"] = {"indices": valid.tolist(), "labels": prediction.tolist(),
+                                 "scores": scores.tolist()}
+    return result
 
 
 def estimated_peak_mib(model, fit_rows, valid_rows, columns):
@@ -236,11 +251,11 @@ def estimated_peak_mib(model, fit_rows, valid_rows, columns):
     return (2 * fit_rows + valid_rows) * columns * 4 / MIB + 256
 
 
-def run_worker(root, job):
+def run_worker(root, job, module="src.baseline_experiment"):
     """Isolate one fit and interrupt it if the system runs low on physical RAM."""
     env = dict(os.environ, OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1",
                MKL_NUM_THREADS="1", NUMEXPR_NUM_THREADS="1")
-    command = [sys.executable, "-B", "-m", "src.baseline_experiment", "--worker"]
+    command = [sys.executable, "-B", "-m", module, "--worker"]
     started = time.perf_counter()
     with subprocess.Popen(command, cwd=root, env=env, stdin=subprocess.PIPE,
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as child:
