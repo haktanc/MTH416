@@ -1,0 +1,39 @@
+{
+  "figures": [
+    "results/figures/holdout_f1.png",
+    "results/figures/holdout_recall.png",
+    "results/figures/holdout_accuracy.png",
+    "results/figures/holdout_confusion.png",
+    "results/figures/holdout_roc.png",
+    "results/figures/holdout_precision_recall.png",
+    "results/figures/holdout_errors.png",
+    "results/figures/holdout_feature_comparison.png",
+    "results/figures/holdout_classifier_comparison.png",
+    "results/figures/holdout_runtime.png",
+    "results/figures/holdout_examples.png"
+  ],
+  "holdout_sha256": {
+    "results/cache/features/test_glcm.npy": "5a6b34160b13c240a35361bff3660aa832bce326db3bd6862c5a10fe609f079d",
+    "results/cache/features/test_hog16.npy": "0f67b54ade22df50a1d95490c748a9927d214323f586b4a8bb9b9911e913d0c3",
+    "results/cache/features/test_labels.npy": "20a6f02702a76de53e3d94a4237b8262015caa679daa1c3674bf872c07d96c17",
+    "results/tables/feature_test_index.csv": "15b83dc87df1b2df94d80c16dd38c32b8755d9906b80941e0bb6c35eb3a10fe6"
+  },
+  "predictions": 1560,
+  "primary": "hog16_glcm_svm_07",
+  "protocol_sha256": "84c5b9b7152fc5c72bfdc420c26e7d611a9dc1889f2f2f3ab0a42e05c0814a3c",
+  "resources": {
+    "available_ram_bytes": 7607726080,
+    "cpu": "AMD64 Family 26 Model 36 Stepping 0, AuthenticAMD",
+    "disk_free_bytes": 370146549760,
+    "logical_cpus": 20,
+    "platform": "Windows-11-10.0.26300-SP0",
+    "total_ram_bytes": 16417599488
+  },
+  "scope": "Independent image-level holdout evaluation of six frozen configurations",
+  "seed": 42,
+  "stage": 5,
+  "status": "complete",
+  "test_rows": 260,
+  "train_rows": 1040,
+  "wall_seconds": 108.17725989999599
+}

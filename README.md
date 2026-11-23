@@ -14,7 +14,7 @@ The saved manifests remain
 established from the available data. HOG/GLCM resource benchmarks and feature
 caches are available. Stage 4A measures fixed classifier baselines using
 training-set cross-validation. Stage 4B tunes shortlisted pairs on the same
-folds. Final holdout evaluation is reserved for Stage 5.
+folds. Stage 5 evaluates the six frozen pipelines on the saved holdout.
 
 ## Dataset selection
 
@@ -1038,6 +1038,197 @@ training-only loader and saved-fold alignment, the fixed candidate plan,
 fold-local scaling and fixed group weighting, metric calculations, and
 checkpoint and selection round trips.
 
+## Stage 5: Final image-level holdout evaluation
+
+Stage 5 fits each of the six saved Stage 4B selections on all 1,040 training
+images and evaluates it on the original 260-image test manifest. The
+predetermined primary model is **HOG 16×16 + GLCM + SVM**
+(`hog16_glcm_svm_07`). The other five models are fixed comparisons.
+The [frozen protocol](results/tables/holdout_protocol.json) records the
+feature preprocessing, ordered pipeline steps, exact parameters, and
+input and source fingerprints. It was saved before opening holdout labels.
+
+| Features | Classifier | Selected settings | GLCM multiplier |
+| --- | --- | --- | ---: |
+| HOG 16×16 | SVM | `C=3`, `gamma="scale"` | 1 |
+| HOG 16×16 | Random Forest | 60 trees | 1 |
+| GLCM | SVM | `C=1`, `gamma=1/12` | 1 |
+| GLCM | Random Forest | 60 trees | 1 |
+| HOG 16×16 + GLCM | SVM (primary) | `C=3`, `gamma="scale"` | `sqrt(34596/48)` |
+| HOG 16×16 + GLCM | Random Forest | 100 trees (retained Stage 4A baseline) | 1 |
+
+Native 512×512 grayscale decoding, per-image Min-Max normalization, and
+the Stage 3 feature definitions are unchanged. The experiment verifies the
+manifest fingerprints, disjoint image IDs, and cache row order, shape, dtype,
+and labels. It reads the existing float32 feature caches. For SVM, it
+materializes float64 inputs and fits the batched standard scaler on the 1,040
+training rows. The combined primary SVM multiplies the final 48 standardized
+GLCM columns by `sqrt(34596/48)` before fitting the RBF kernel. The multiplier
+was selected in Stage 4B. Random Forest uses float32 unscaled features,
+`max_features="sqrt"`, `max_depth=None`, `min_samples_leaf=1`,
+`min_samples_split=2`, and `n_jobs=1`. Both classifier families use seed
+42 and `class_weight=None`. Fits run sequentially on the CPU.
+
+The estimator's default `predict` produces class labels. Continuous
+scores use SVM's `decision_function` and Random Forest's probability for
+class 1. All positive-class metrics refer to Defective. Precision–recall
+area is reported as scikit-learn average precision (AP). Nominal 95% Wilson
+intervals for accuracy, Defective recall and OK recall quantify uncertainty
+at the image level under a binomial assumption. Confusion-matrix
+percentages use the actual class as the denominator.
+
+Stage 4A reports fixed-baseline training CV. Stage 4B reports candidate
+means from those same five training folds and may be optimistic because
+those folds were also used for selection. Stage 5 is the separate,
+image-level holdout evaluation. Holdout outcomes do not change the primary
+model, feature weights, or decision thresholds.
+
+### Reproduction
+
+In a fresh workspace with the original dataset, unchanged Stage 1–4B
+records, Stage 3 caches, and the dependency versions recorded in the
+protocol, run:
+
+```powershell
+.\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider
+.\.venv\Scripts\python.exe -B -m src.holdout_experiment freeze
+.\.venv\Scripts\python.exe -B -m src.holdout_experiment run
+```
+
+If an identical protocol already exists, review it and omit the `freeze`
+command. The `run` command verifies the frozen protocol before reading the
+holdout and refuses to start when existing Stage 5 results or an execution
+log are present. The run log and completed model predictions are retained
+if execution stops partway.
+
+### Final holdout results
+
+Accuracy, balanced accuracy, precision, recall, F1, and specificity are
+percentages. ROC-AUC and AP are on a 0–1 scale. TN and FP sum to 104 OK
+images. FN and TP sum to 156 Defective images.
+
+| Model | Accuracy | Balanced acc. | Precision | Defective recall | F1 | Specificity | ROC-AUC | AP | TN | FP | FN | TP |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| HOG 16×16 + SVM | 95.38 | 95.67 | 98.00 | 94.23 | 96.08 | 97.12 | 0.9945 | 0.9962 | 101 | 3 | 9 | 147 |
+| HOG 16×16 + Random Forest | 83.46 | 82.05 | 84.24 | 89.10 | 86.60 | 75.00 | 0.8998 | 0.9343 | 78 | 26 | 17 | 139 |
+| GLCM + SVM | 89.62 | 90.06 | 94.48 | 87.82 | 91.03 | 92.31 | 0.9524 | 0.9738 | 96 | 8 | 19 | 137 |
+| GLCM + Random Forest | 93.46 | 92.79 | 93.17 | 96.15 | 94.64 | 89.42 | 0.9689 | 0.9743 | 93 | 11 | 6 | 150 |
+| **HOG 16×16 + GLCM + SVM** | **97.31** | **97.28** | **98.06** | **97.44** | **97.75** | **97.12** | **0.9952** | **0.9966** | **101** | **3** | **4** | **152** |
+| HOG 16×16 + GLCM + Random Forest | 83.46 | 81.41 | 82.66 | 91.67 | 86.93 | 71.15 | 0.9259 | 0.9507 | 74 | 30 | 13 | 143 |
+
+The primary model retained the strongest observed performance. It detected
+152 of 156 Defective images, with a nominal 95% Wilson recall interval of
+93.59–99.00%. Its four missed defects were 2.56% of the actual Defective
+images. It had the highest observed ROC-AUC and AP, with HOG 16×16 + SVM
+close on both ranking metrics. GLCM + Random Forest had six misses and
+the next-highest Defective recall.
+
+For SVM, HOG outperformed GLCM alone on Defective F1 and recall. The
+weighted combination further increased F1 by 1.67 percentage points over
+HOG alone and by 6.72 points over GLCM alone. It cut nine HOG-only misses
+to four while retaining three false alarms. The combination added 48
+columns to 34,596 HOG columns. The fixed multiplier increases the share
+of squared distances contributed by standardized GLCM columns in the RBF
+kernel. The holdout contains no matched unweighted combined-SVM comparison,
+so it does not isolate the effect of the multiplier from feature fusion.
+
+For Random Forest, GLCM alone gave the best F1, recall and balanced
+accuracy. Adding GLCM to HOG reduced missed defects from 17 to 13 and
+increased false alarms from 26 to 30. The combined forest lagged the
+48-column GLCM forest by 7.71 percentage points in F1. With HOG and
+combined features, SVM had higher F1 and recall than Random Forest.
+With GLCM alone, Random Forest had higher F1 and recall than SVM, while
+SVM had higher specificity. These comparisons apply to the frozen pipelines.
+
+| Model | Stage 4A baseline CV F1 | Stage 4B selection CV F1 | Stage 5 holdout F1 |
+| --- | ---: | ---: | ---: |
+| HOG 16×16 + SVM | 88.29% | 92.28% | 96.08% |
+| HOG 16×16 + Random Forest | 81.80% | 82.41% | 86.60% |
+| GLCM + SVM | 82.12% | 88.38% | 91.03% |
+| GLCM + Random Forest | 91.48% | 91.91% | 94.64% |
+| HOG 16×16 + GLCM + SVM | 88.55% | 94.34% | 97.75% |
+| HOG 16×16 + GLCM + Random Forest | 84.23% | 84.23% | 86.93% |
+
+All six holdout F1 scores exceeded their Stage 4B means on this
+partition. The primary model's recall rose from 89.60% in baseline CV
+to 93.28% in selection CV and 97.44% on holdout. The holdout model used
+1,040 training rows, compared with 832 per CV fit, and was evaluated on
+different images. The scores alone cannot establish why performance rose.
+
+### Computational cost
+
+The run took 108.18 seconds, including input validation, worker startup,
+fit, inference, and report rendering. This table gives measured time per
+phase, excluding input loading, and each worker's peak resident memory.
+
+| Model | Features | Fit (s) | Label prediction (s) | Continuous scores (s) | Peak RSS (MiB) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| HOG 16×16 + SVM | 34,596 | 11.956 | 7.245 | 7.326 | 677.68 |
+| HOG 16×16 + Random Forest | 34,596 | 9.199 | 0.016 | 0.012 | 403.50 |
+| GLCM + SVM | 48 | 0.064 | 0.018 | 0.019 | 130.04 |
+| GLCM + Random Forest | 48 | 0.330 | 0.008 | 0.008 | 128.61 |
+| HOG 16×16 + GLCM + SVM | 34,644 | 11.227 | 6.084 | 6.286 | 679.34 |
+| HOG 16×16 + GLCM + Random Forest | 34,644 | 14.810 | 0.020 | 0.019 | 404.23 |
+
+The label prediction column includes SVM's scaling and weighting.
+The primary SVM had two fewer missed defects and eight fewer false alarms
+than the GLCM forest. It required 12.370 seconds for labels and scores
+on cached features, compared with 0.015 seconds for the GLCM forest.
+The 48-column forest therefore offers a lower-cost trade-off, while the
+large feature design delivered the best observed defect detection with SVM
+in this run. These single-run timings exclude feature extraction and are
+specific to this CPU and environment.
+
+### Error analysis and artifacts
+
+At least one model misclassified 67 of the 260 images. Two or more models
+misclassified 41 images, including 16 Defective and 25 OK images. All six
+missed `cast_def_0_9854.jpeg` and `cast_def_0_311.jpeg` and falsely
+flagged `cast_ok_0_9959.jpeg`. The example grid shows visually similar
+concentric reflections in some true and false classifications. Two primary
+false negatives, `cast_def_0_9854.jpeg` and `cast_def_0_9356.jpeg`, have
+similar framing and small dark marks on the outer edge. They were missed by
+six and five models, respectively. These observations do not establish shared
+physical-part identity or the cause of a misclassification.
+
+- Results and counts: [metrics, intervals and timings](results/tables/holdout_metrics.csv),
+  [confusion counts and row percentages](results/tables/holdout_confusion.csv),
+  [1,560 predictions and scores](results/tables/holdout_predictions.csv),
+  [shared errors](results/tables/holdout_shared_errors.csv), and
+  [example IDs](results/tables/holdout_examples.csv).
+- Provenance: [frozen protocol](results/tables/holdout_protocol.json),
+  [run metadata](results/tables/holdout_run.json), and
+  [execution log](results/tables/holdout_execution.txt).
+- Classification figures: [F1](results/figures/holdout_f1.png),
+  [recall](results/figures/holdout_recall.png),
+  [accuracy](results/figures/holdout_accuracy.png),
+  [confusion matrices](results/figures/holdout_confusion.png),
+  [ROC](results/figures/holdout_roc.png),
+  [precision–recall](results/figures/holdout_precision_recall.png), and
+  [FP/FN counts](results/figures/holdout_errors.png).
+- Comparison figures: [features by classifier](results/figures/holdout_feature_comparison.png),
+  [classifiers by feature set](results/figures/holdout_classifier_comparison.png),
+  [runtime](results/figures/holdout_runtime.png), and
+  [image examples](results/figures/holdout_examples.png).
+
+The configured suite passed 173 tests in 44.57 seconds with real holdout
+files blocked. An independent check reconstructed all six confusion matrices
+and the classification and ranking metrics from the saved predictions. It
+also verified the input fingerprints and decoded all eleven 300-DPI figures.
+
+### Scientific limitations
+
+The labels describe binary OK/Defective appearance. The evaluation
+does not distinguish cracks, porosity, or other defect types, and it does
+not localize or segment defects. The split isolates exact duplicates and
+image IDs, but physical-part independence cannot be verified from the
+available identifiers. Unconfirmed perceptual-similarity candidates
+remain advisory. Performance may reflect dataset-specific illumination,
+framing, surface appearance, or other visual characteristics. A single
+holdout gives limited evidence about newly manufactured parts and future
+industrial environments. The intervals do not account for unknown
+physical-part dependence.
+
 ## Git and dataset management
 
 The existing GitHub repository is
@@ -1065,17 +1256,6 @@ Ignore rules do not remove already tracked files. No raw images were tracked at
 the start of initialization, so no dataset index cleanup was needed. Dataset
 audit and preparation scripts do not commit, push, rewrite Git history, or
 change remote configuration. Review staged changes before making a commit.
-
-## Planned development stages
-
-Stages 2 and 3 are complete. Unconfirmed perceptual-similarity candidates are advisory
-and do not block development. Keep the accepted manifests and saved CV
-assignments unchanged. Unknown physical-part relationships remain a limitation
-to disclose; only substantiated new evidence would justify a separately
-reviewed protocol change, without consulting model/test performance.
-
-1. In Stage 5, fit the selected configuration on the full training partition.
-2. Evaluate the frozen configuration on held-out data and save final metrics.
 
 Use English throughout file names, identifiers, comments, docstrings, logging,
 charts, and documentation. Follow PEP 8 for Python development.

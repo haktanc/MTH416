@@ -1,0 +1,554 @@
+{
+  "dataset": "data/raw/casting_512x512",
+  "decision_rule": "Estimator predict with the default decision rule",
+  "error_examples": "Up to three primary-model examples per outcome, seed 42",
+  "execution": {
+    "backend": "CPU",
+    "numerical_threads": 1,
+    "parallel_fits": 1
+  },
+  "expected_manifest_sha256": {
+    "data/splits/test.csv": "740f2e053dc69ee89351097e5b2a7abaf6b4fa09272637d02185caa5d0afa8bf",
+    "data/splits/train.csv": "8775c7592975e2d0b20fa15101d9d93bb68f7061c986a5eace812f5edc5f34c4",
+    "results/tables/cv_folds.csv": "9b96102e5e022af37a16c4a1b3103d7e972848a2de3772766531882e160d4364"
+  },
+  "feature_configuration": {
+    "angles_degrees": [
+      0,
+      45,
+      90,
+      135
+    ],
+    "dtype": "float32",
+    "glcm_feature_order": "property, distance, angle (C order)",
+    "glcm_normed": true,
+    "glcm_properties": [
+      "contrast",
+      "dissimilarity",
+      "homogeneity",
+      "energy",
+      "correlation",
+      "ASM"
+    ],
+    "glcm_quantization": "min(floor(normalized_pixel * 32), 31)",
+    "glcm_symmetric": true,
+    "grayscale": "OpenCV IMREAD_GRAYSCALE",
+    "hog_transform_sqrt": false,
+    "image_shape": [
+      512,
+      512
+    ],
+    "methods": {
+      "glcm": {
+        "angles": [
+          0.0,
+          0.7853981633974483,
+          1.5707963267948966,
+          2.356194490192345
+        ],
+        "block_norm": "L2-Hys",
+        "cells_per_block": [
+          2,
+          2
+        ],
+        "distances": [
+          1,
+          2
+        ],
+        "glcm_levels": 32,
+        "orientations": 9,
+        "pixels_per_cell": [
+          8,
+          8
+        ]
+      },
+      "hog16": {
+        "angles": [
+          0.0,
+          0.7853981633974483,
+          1.5707963267948966,
+          2.356194490192345
+        ],
+        "block_norm": "L2-Hys",
+        "cells_per_block": [
+          2,
+          2
+        ],
+        "distances": [
+          1,
+          2
+        ],
+        "glcm_levels": 32,
+        "orientations": 9,
+        "pixels_per_cell": [
+          16,
+          16
+        ]
+      },
+      "hog8": {
+        "angles": [
+          0.0,
+          0.7853981633974483,
+          1.5707963267948966,
+          2.356194490192345
+        ],
+        "block_norm": "L2-Hys",
+        "cells_per_block": [
+          2,
+          2
+        ],
+        "distances": [
+          1,
+          2
+        ],
+        "glcm_levels": 32,
+        "orientations": 9,
+        "pixels_per_cell": [
+          8,
+          8
+        ]
+      }
+    },
+    "normalization": "Per-image Min-Max; constants become zeros; no resizing"
+  },
+  "frozen_sha256": {
+    "results/tables/stage1_validation.json": "e5bb37aa7e4229b37bf81244fe9962f45864fb3a8254596a1cf3e309eb61b92f",
+    "results/tables/tuning_cv_candidates.csv": "ab9cabf87eef5e29de57deb8619149db3dc55b4032d43f17d09a72fc57c2b9fd",
+    "results/tables/tuning_cv_folds.csv": "dad4d1e9e0ce6058e21f9edd674fce9626eb1fa13ab1a73f959fc0de27df6413",
+    "results/tables/tuning_cv_run.json": "627bb8c5db6df4eddf3bed03ff0897db2582564917cde98d37471a013615f0ca",
+    "results/tables/tuning_cv_selected.csv": "8c82bcfc9449fd606fa077d580d201e02e23e2a7f90dd7c30de7760883498df8",
+    "src/holdout_experiment.py": "8bd5a65103a3180487a305e1b34797a35957288259626499e230a54b85a0277b",
+    "src/holdout_figures.py": "aada8056923a494bbaf81503d530ffd04f5c8663f47ea77ff42ce4f321fc80c1"
+  },
+  "implementation_sha256": {
+    "src/baseline_experiment.py": "180c9f51f4a9d3a03afdbdf13417470a1210c3a9e78f8dafa137bcf73a129e9f",
+    "src/baseline_scaling.py": "f63a22c0a91ecc0aba4a49307f021454f628f951e7df930772fe36b814194b36",
+    "src/evaluation.py": "f63fdf6de72c5c84295e088a08ec40a5e24c8383f89a089754f2819fa51bb37c",
+    "src/model_training.py": "b7a6a729fa3a6a8da260c55d49f9d8eaeeac72679a0a8c832b33c256f57fc28d",
+    "src/tuning_experiment.py": "35fc1823cec0c1fed850e37cb6dbc341fb5d39a4067461c4f5ac0a0f0b8c8bc8"
+  },
+  "label_encoding": {
+    "Defective": 1,
+    "OK": 0
+  },
+  "models": [
+    {
+      "candidate": "hog16_svm_02",
+      "columns": 34596,
+      "feature_order": [
+        "hog16"
+      ],
+      "feature_set": "hog16",
+      "glcm_weight": 1.0,
+      "input_dtype": "float64",
+      "model": "svm",
+      "name": "HOG 16\u00d716 + SVM",
+      "pipeline": [
+        {
+          "implementation": "BatchedStandardScaler",
+          "parameters": {
+            "copy": false,
+            "with_mean": true,
+            "with_std": true
+          },
+          "step": "scaler"
+        },
+        {
+          "implementation": "SVC",
+          "parameters": {
+            "C": 3.0,
+            "break_ties": false,
+            "cache_size": 200,
+            "class_weight": null,
+            "coef0": 0.0,
+            "decision_function_shape": "ovr",
+            "degree": 3,
+            "gamma": "scale",
+            "kernel": "rbf",
+            "max_iter": -1,
+            "probability": "deprecated",
+            "random_state": 42,
+            "shrinking": true,
+            "tol": 0.001,
+            "verbose": false
+          },
+          "step": "classifier"
+        }
+      ],
+      "selected_parameters": {
+        "C": 3.0,
+        "gamma": "scale"
+      },
+      "selected_source": "stage4b",
+      "training_cv": {
+        "stage4a_accuracy": 0.8567307692307692,
+        "stage4a_balanced_accuracy": 0.8463903614457833,
+        "stage4a_f1": 0.8829442284746228,
+        "stage4a_precision": 0.8697592499441091,
+        "stage4a_recall": 0.8976000000000001,
+        "stage4a_roc_auc": 0.9429590361445783,
+        "stage4b_accuracy": 0.9076923076923077,
+        "stage4b_balanced_accuracy": 0.905387951807229,
+        "stage4b_f1": 0.9228177879241131,
+        "stage4b_precision": 0.9296705798848963,
+        "stage4b_recall": 0.9168,
+        "stage4b_roc_auc": 0.9766939759036145
+      }
+    },
+    {
+      "candidate": "hog16_random_forest_01",
+      "columns": 34596,
+      "feature_order": [
+        "hog16"
+      ],
+      "feature_set": "hog16",
+      "glcm_weight": 1.0,
+      "input_dtype": "float32",
+      "model": "random_forest",
+      "name": "HOG 16\u00d716 + Random Forest",
+      "pipeline": [
+        {
+          "implementation": "RandomForestClassifier",
+          "parameters": {
+            "bootstrap": true,
+            "ccp_alpha": 0.0,
+            "class_weight": null,
+            "criterion": "gini",
+            "max_depth": null,
+            "max_features": "sqrt",
+            "max_leaf_nodes": null,
+            "max_samples": null,
+            "min_impurity_decrease": 0.0,
+            "min_samples_leaf": 1,
+            "min_samples_split": 2,
+            "min_weight_fraction_leaf": 0.0,
+            "monotonic_cst": null,
+            "n_estimators": 60,
+            "n_jobs": 1,
+            "oob_score": false,
+            "random_state": 42,
+            "verbose": 0,
+            "warm_start": false
+          },
+          "step": "classifier"
+        }
+      ],
+      "selected_parameters": {
+        "max_depth": null,
+        "max_features": "sqrt",
+        "min_samples_leaf": 1,
+        "n_estimators": 60
+      },
+      "selected_source": "stage4b",
+      "training_cv": {
+        "stage4a_accuracy": 0.7711538461538462,
+        "stage4a_balanced_accuracy": 0.7496867469879518,
+        "stage4a_f1": 0.8179746182436254,
+        "stage4a_precision": 0.7837424728143262,
+        "stage4a_recall": 0.8560000000000001,
+        "stage4a_roc_auc": 0.8801831325301205,
+        "stage4b_accuracy": 0.7798076923076923,
+        "stage4b_balanced_accuracy": 0.7601253012048191,
+        "stage4b_f1": 0.8240716744818475,
+        "stage4b_precision": 0.7937482427911436,
+        "stage4b_recall": 0.8576,
+        "stage4b_roc_auc": 0.8694168674698796
+      }
+    },
+    {
+      "candidate": "glcm_svm_04",
+      "columns": 48,
+      "feature_order": [
+        "glcm"
+      ],
+      "feature_set": "glcm",
+      "glcm_weight": 1.0,
+      "input_dtype": "float64",
+      "model": "svm",
+      "name": "GLCM + SVM",
+      "pipeline": [
+        {
+          "implementation": "BatchedStandardScaler",
+          "parameters": {
+            "copy": false,
+            "with_mean": true,
+            "with_std": true
+          },
+          "step": "scaler"
+        },
+        {
+          "implementation": "SVC",
+          "parameters": {
+            "C": 1.0,
+            "break_ties": false,
+            "cache_size": 200,
+            "class_weight": null,
+            "coef0": 0.0,
+            "decision_function_shape": "ovr",
+            "degree": 3,
+            "gamma": 0.08333333333333333,
+            "kernel": "rbf",
+            "max_iter": -1,
+            "probability": "deprecated",
+            "random_state": 42,
+            "shrinking": true,
+            "tol": 0.001,
+            "verbose": false
+          },
+          "step": "classifier"
+        }
+      ],
+      "selected_parameters": {
+        "C": 1.0,
+        "gamma": 0.08333333333333333
+      },
+      "selected_source": "stage4b",
+      "training_cv": {
+        "stage4a_accuracy": 0.7846153846153846,
+        "stage4a_balanced_accuracy": 0.7750554216867471,
+        "stage4a_f1": 0.8211590320720642,
+        "stage4a_precision": 0.8214839193133358,
+        "stage4a_recall": 0.8224,
+        "stage4a_roc_auc": 0.870612048192771,
+        "stage4b_accuracy": 0.8634615384615383,
+        "stage4b_balanced_accuracy": 0.8633253012048192,
+        "stage4b_f1": 0.8838354830879389,
+        "stage4b_precision": 0.905389210233593,
+        "stage4b_recall": 0.8640000000000001,
+        "stage4b_roc_auc": 0.9398361445783132
+      }
+    },
+    {
+      "candidate": "glcm_random_forest_01",
+      "columns": 48,
+      "feature_order": [
+        "glcm"
+      ],
+      "feature_set": "glcm",
+      "glcm_weight": 1.0,
+      "input_dtype": "float32",
+      "model": "random_forest",
+      "name": "GLCM + Random Forest",
+      "pipeline": [
+        {
+          "implementation": "RandomForestClassifier",
+          "parameters": {
+            "bootstrap": true,
+            "ccp_alpha": 0.0,
+            "class_weight": null,
+            "criterion": "gini",
+            "max_depth": null,
+            "max_features": "sqrt",
+            "max_leaf_nodes": null,
+            "max_samples": null,
+            "min_impurity_decrease": 0.0,
+            "min_samples_leaf": 1,
+            "min_samples_split": 2,
+            "min_weight_fraction_leaf": 0.0,
+            "monotonic_cst": null,
+            "n_estimators": 60,
+            "n_jobs": 1,
+            "oob_score": false,
+            "random_state": 42,
+            "verbose": 0,
+            "warm_start": false
+          },
+          "step": "classifier"
+        }
+      ],
+      "selected_parameters": {
+        "max_depth": null,
+        "max_features": "sqrt",
+        "min_samples_leaf": 1,
+        "n_estimators": 60
+      },
+      "selected_source": "stage4b",
+      "training_cv": {
+        "stage4a_accuracy": 0.898076923076923,
+        "stage4a_balanced_accuracy": 0.8949590361445783,
+        "stage4a_f1": 0.9148010787776901,
+        "stage4a_precision": 0.9198375112756967,
+        "stage4a_recall": 0.9103999999999999,
+        "stage4a_roc_auc": 0.9644915662650602,
+        "stage4b_accuracy": 0.9038461538461539,
+        "stage4b_balanced_accuracy": 0.9025927710843373,
+        "stage4b_f1": 0.9191385658901714,
+        "stage4b_precision": 0.9302421732374242,
+        "stage4b_recall": 0.9088,
+        "stage4b_roc_auc": 0.9633253012048192
+      }
+    },
+    {
+      "candidate": "hog16_glcm_svm_07",
+      "columns": 34644,
+      "feature_order": [
+        "hog16",
+        "glcm"
+      ],
+      "feature_set": "hog16_glcm",
+      "glcm_weight": 26.846787517317598,
+      "input_dtype": "float64",
+      "model": "svm",
+      "name": "HOG 16\u00d716 + GLCM + SVM",
+      "pipeline": [
+        {
+          "implementation": "BatchedStandardScaler",
+          "parameters": {
+            "copy": false,
+            "with_mean": true,
+            "with_std": true
+          },
+          "step": "scaler"
+        },
+        {
+          "implementation": "FunctionTransformer",
+          "parameters": {
+            "accept_sparse": false,
+            "check_inverse": true,
+            "feature_names_out": null,
+            "func": "src.baseline_scaling.weight_glcm",
+            "inv_kw_args": null,
+            "inverse_func": null,
+            "kw_args": {
+              "factor": 26.846787517317598
+            },
+            "validate": false
+          },
+          "step": "glcm_weight"
+        },
+        {
+          "implementation": "SVC",
+          "parameters": {
+            "C": 3.0,
+            "break_ties": false,
+            "cache_size": 200,
+            "class_weight": null,
+            "coef0": 0.0,
+            "decision_function_shape": "ovr",
+            "degree": 3,
+            "gamma": "scale",
+            "kernel": "rbf",
+            "max_iter": -1,
+            "probability": "deprecated",
+            "random_state": 42,
+            "shrinking": true,
+            "tol": 0.001,
+            "verbose": false
+          },
+          "step": "classifier"
+        }
+      ],
+      "selected_parameters": {
+        "C": 3.0,
+        "gamma": "scale"
+      },
+      "selected_source": "stage4b",
+      "training_cv": {
+        "stage4a_accuracy": 0.860576923076923,
+        "stage4a_balanced_accuracy": 0.8516144578313252,
+        "stage4a_f1": 0.8854680366487596,
+        "stage4a_precision": 0.8759560049192041,
+        "stage4a_recall": 0.8960000000000001,
+        "stage4a_roc_auc": 0.9441156626506025,
+        "stage4b_accuracy": 0.9326923076923077,
+        "stage4b_balanced_accuracy": 0.932665060240964,
+        "stage4b_f1": 0.9433612579303361,
+        "stage4b_precision": 0.9545252852248931,
+        "stage4b_recall": 0.9328,
+        "stage4b_roc_auc": 0.9876048192771085
+      }
+    },
+    {
+      "candidate": "hog16_glcm_random_forest_00",
+      "columns": 34644,
+      "feature_order": [
+        "hog16",
+        "glcm"
+      ],
+      "feature_set": "hog16_glcm",
+      "glcm_weight": 1.0,
+      "input_dtype": "float32",
+      "model": "random_forest",
+      "name": "HOG 16\u00d716 + GLCM + Random Forest",
+      "pipeline": [
+        {
+          "implementation": "RandomForestClassifier",
+          "parameters": {
+            "bootstrap": true,
+            "ccp_alpha": 0.0,
+            "class_weight": null,
+            "criterion": "gini",
+            "max_depth": null,
+            "max_features": "sqrt",
+            "max_leaf_nodes": null,
+            "max_samples": null,
+            "min_impurity_decrease": 0.0,
+            "min_samples_leaf": 1,
+            "min_samples_split": 2,
+            "min_weight_fraction_leaf": 0.0,
+            "monotonic_cst": null,
+            "n_estimators": 100,
+            "n_jobs": 1,
+            "oob_score": false,
+            "random_state": 42,
+            "verbose": 0,
+            "warm_start": false
+          },
+          "step": "classifier"
+        }
+      ],
+      "selected_parameters": {
+        "max_depth": null,
+        "max_features": "sqrt",
+        "min_samples_leaf": 1,
+        "n_estimators": 100
+      },
+      "selected_source": "stage4a",
+      "training_cv": {
+        "stage4a_accuracy": 0.8009615384615385,
+        "stage4a_balanced_accuracy": 0.7801542168674699,
+        "stage4a_f1": 0.8422594128754255,
+        "stage4a_precision": 0.8057783143991365,
+        "stage4a_recall": 0.8832000000000001,
+        "stage4a_roc_auc": 0.8994313253012048,
+        "stage4b_accuracy": 0.8009615384615385,
+        "stage4b_balanced_accuracy": 0.7801542168674699,
+        "stage4b_f1": 0.8422594128754255,
+        "stage4b_precision": 0.8057783143991365,
+        "stage4b_recall": 0.8832000000000001,
+        "stage4b_roc_auc": 0.8994313253012048
+      }
+    }
+  ],
+  "partition_rows": {
+    "test": 260,
+    "train": 1040
+  },
+  "primary": "hog16_glcm_svm_07",
+  "python": "3.14.7",
+  "score_methods": {
+    "random_forest": "predict_proba[:, class 1]",
+    "svm": "decision_function"
+  },
+  "seed": 42,
+  "source": "Saved Stage 4B training-only CV selections",
+  "stage": 5,
+  "training_sha256": {
+    "data/splits/train.csv": "8775c7592975e2d0b20fa15101d9d93bb68f7061c986a5eace812f5edc5f34c4",
+    "results/cache/features/train_glcm.npy": "266f8a38f65a2073496be0700e0e33629fcf693ef581b18ca0e1a3fe191b487a",
+    "results/cache/features/train_hog16.npy": "e3164f5961bd5534e89e67bc3f46ce0dda0babb6c7d00a32135e92bad44f5f0e",
+    "results/cache/features/train_labels.npy": "78707407f0d755a254a5c917b06af8e69677c2632022e8f40a1884856cfd49ed",
+    "results/tables/baseline_cv_folds.csv": "cb59cb409f7762e611893bfc5f643edf9f652af8c1a58cda0b7f88998ae75df1",
+    "results/tables/baseline_cv_run.json": "8bba9218a914c8c4254e4e8f27f9ae75cd53c814d35f121142d369401e6fdf93",
+    "results/tables/baseline_cv_summary.csv": "7bc46395b445889060bebd9562b4374e32c9a21ab628d247ead0cdc76032db0c",
+    "results/tables/cv_folds.csv": "9b96102e5e022af37a16c4a1b3103d7e972848a2de3772766531882e160d4364",
+    "results/tables/feature_run_summary.json": "51e001a452e8bddc9a6b667a2b9e463e25f5c6413a612a557871c535f7939db0",
+    "results/tables/feature_train_index.csv": "979d7559c5c50b820a88ce47e32f19bcce4d112b50f9f043073d9c4cd1c10f59"
+  },
+  "uncertainty": "Nominal 95% Wilson intervals for accuracy, recall and specificity",
+  "versions": {
+    "numpy": "2.5.4",
+    "scikit-learn": "1.9.1",
+    "threadpoolctl": "3.8.0"
+  }
+}
